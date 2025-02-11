@@ -1,8 +1,8 @@
 ipykernel
 matplotlib==3.10.0
-numpy==2.2.2
+numpy
 pandas==2.2.3
 scikit-learn==1.6.1
-tensorflow[and-cuda]==2.18.0
+# tensorflow package is installed separately to manage compatibility across UCloud and MacOS
 tqdm==4.67.1
 wandb==0.19.6
