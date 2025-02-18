@@ -1,6 +1,8 @@
+codecarbon==2.8.3
 ipykernel
 matplotlib==3.10.0
 numpy
+ollama-python==0.1.2
 pandas==2.2.3
 scikit-learn==1.6.1
 # tensorflow package is installed separately to manage compatibility across UCloud and MacOS
