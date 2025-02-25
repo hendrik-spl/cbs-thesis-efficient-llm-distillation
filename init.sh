@@ -22,8 +22,8 @@ install_linux_packages() {
     echo_info "Updating package lists..."
     sudo apt-get update
 
-    echo_info "Installing Python3, venv, and pip..."
-    sudo apt-get install -y python3 python3-venv python3-pip git
+    echo_info "Installing Git and curl..."
+    sudo apt-get install -y git curl
 }
 
 # Function to install packages on macOS
@@ -31,11 +31,8 @@ install_macos_packages() {
     echo_info "Updating Homebrew..."
     brew update
 
-    echo_info "Installing Python3.11..."
-    brew install python@3.11
-
-    echo_info "Installing Git..."
-    brew install git
+    echo_info "Installing Git and curl..."
+    brew install git curl
 }
 
 # Install necessary packages based on OS
@@ -58,6 +55,15 @@ else
     echo_error "No GPU detected or driver missing."
 fi
 
+# Install uv if not already installed
+if ! command -v uv > /dev/null 2>&1; then
+    echo_info "Installing uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="$HOME/.local/bin:$PATH"
+else
+    echo_info "uv is already installed."
+fi
+
 # Clone the repository if not already cloned
 REPO_DIR="cbs-thesis-efficient-llm-distillation"
 REPO_URL="https://github.com/hendrik-spl/${REPO_DIR}.git"
@@ -78,38 +84,26 @@ else
     fi
 fi
 
-# Set up virtual environment
-if [ ! -d "venv" ]; then
-    echo_info "Setting up virtual environment..."
-    python3.11 -m venv .venv
-else
-    echo_info "Virtual environment already exists."
-fi
-
-# Activate virtual environment
-echo_info "Activating virtual environment..."
-source .venv/bin/activate
-
-# Upgrade pip
-echo_info "Upgrading pip..."
-pip install --upgrade pip
+# Activate uv environment
+echo_info "Activating uv environment and installing dependencies..."
+uv venv .venv
+uv sync
 
 # Install tensorflow dependent on environment
 if [[ "$RUNNING_ON_CLOUD" == "true" ]]; then
     echo_info "Installing tf for Linux UCloud environment..."
-    pip install tensorflow[and-cuda]
+    uv add tensorflow[and-cuda]
 else
     echo_info "Installing tf for local MacOS environment..."
-    pip install tensorflow-macos
+    uv add tensorflow-macos
 fi
-
-# Install requirements
-echo_info "Installing dependencies..."
-pip install -r requirements.txt
 
 # Ensuring reproducibility
 echo_info "Setting environment variable for reproducibility..."
 export TF_DETERMINISTIC_OPS=1
 export TF_CUDNN_DETERMINISTIC=1
+
+# Revert exit immediately if a command exits with a non-zero status
+set +e
 
 echo_info "Initialization complete."

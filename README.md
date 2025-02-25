@@ -24,7 +24,7 @@ Welcome to the repository for our Master’s thesis project, which explores **su
     ```bash
     source init.sh
     ```
-* Note: The `init.sh` script already takes care of setting up and activating the `venv` environment. The following steps are provided as a fallback.
+* Note: The `init.sh` script already takes care of setting up and activating the `.venv` environment. The following steps are provided as a fallback.
 * This setup is specifically designed for the use of CUDA GPUs. Adaptions might be neccessary depending on available compute resources.
 
 2. **Set up Weights & Biases**

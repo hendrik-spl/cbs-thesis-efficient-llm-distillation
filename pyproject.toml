@@ -1,0 +1,20 @@
+[project]
+name = "cbs-thesis-efficient-llm-distillation"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "codecarbon>=2.8.3",
+    "datasets>=3.3.2",
+    "ipykernel>=6.29.5",
+    "matplotlib>=3.10.0",
+    "numpy>=2.2.3",
+    "ollama-python>=0.1.2",
+    "pandas>=2.2.3",
+    "scikit-learn>=1.6.1",
+    "seaborn>=0.13.2",
+    "tensorflow-macos>=2.14.0",
+    "tqdm>=4.67.1",
+    "wandb>=0.19.7",
+]
