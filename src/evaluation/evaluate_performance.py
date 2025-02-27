@@ -10,6 +10,16 @@ from src.utils.clean_outputs import clean_llm_output_to_int
 from src.data.process_datasets import get_processed_dataset
 
 def evaluate_performance_sentiment(model, runs):
+    """
+    Evaluate the performance of a model on the sentiment analysis task.
+
+    Parameters:
+        model (str): The model to evaluate. For example 'llama3.2:1b'.
+        runs (int): The number of runs to evaluate the model on.
+
+    Returns:
+        None
+    """
     _, test_sentences, _, test_labels = get_processed_dataset("sentiment")
     
     pred_labels = []
