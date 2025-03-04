@@ -12,6 +12,7 @@ from src.data.process_datasets import get_processed_dataset
 from src.models.model_utils import query_ollama
 from src.prompts.sentiment import get_sentiment_prompt
 from src.utils.clean_outputs import clean_llm_output_to_int
+from src.utils.setup import ensure_dir_exists
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Load a model and run queries")
@@ -20,7 +21,29 @@ def parse_arguments():
     parser.add_argument("--save_outputs", type=bool, default=True, help="Whether to save the outputs")
     return parser.parse_args()
 
-def run_inference(model_name, dataset, save_outputs = True, limit=10):
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Run inference with LLM models")
+    parser.add_argument("--model_name", type=str, required=True, help="Name of the model to load (e.g., 'llama3.2:1b')")
+    parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment')")
+    parser.add_argument("--limit", type=int, default=10, help="Limit the number of samples to process (default: 10)")
+    parser.add_argument("--save_outputs", action="store_true", help="Save the outputs to a file")
+    parser.set_defaults(save_outputs=True)
+    return parser.parse_args()
+
+def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str):
+    """
+    Run inference with a given model on a dataset.
+
+    Args:
+        model_name (str): The name of the model to load
+        dataset (str): The name of the dataset to run inference on
+        limit (int): The number of samples to process
+        save_outputs (bool): Whether to save the outputs to a file
+
+    Returns:
+        None
+    """
+
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     print(f"Running inference with model {model_name} on dataset {dataset}.")
 
@@ -49,8 +72,12 @@ def run_inference(model_name, dataset, save_outputs = True, limit=10):
         output_dir="results/metrics/emissions",
         log_level="warning"
         ) as tracker:
-        for prompt in tqdm(prompts):
-            pred_labels.append(query_ollama(model_name, prompt))
+        for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset}"):
+            try:
+                pred_labels.append(query_ollama(model_name, prompt))
+            except Exception as e:
+                print(f"Error querying model: {e}")
+                return # Exit early
 
     pred_labels = [clean_llm_output_to_int(label) for label in pred_labels]
 
@@ -64,14 +91,20 @@ def run_inference(model_name, dataset, save_outputs = True, limit=10):
         })
 
     if save_outputs:
-        output_path = f"data/inference_outputs/{model_name}/{dataset}_{timestamp}.json"
+        output_dir = f"data/inference_outputs/{model_name}"
+        ensure_dir_exists(output_dir)
+        output_path = f"{output_dir}/{dataset}_{timestamp}.json"
         with open(output_path, "w") as f:
-            json.dump(results, f)
+            json.dump(results, f, indent=2)
 
 def main():
     args = parse_arguments()
 
-    run_inference(args.model_name, args.dataset, args.save_outputs)
+    run_inference(
+        model_name=args.model_name, 
+        dataset=args.dataset,
+        limit=args.limit,
+        save_outputs=args.save_outputs)
 
 if __name__ == "__main__":
     main()

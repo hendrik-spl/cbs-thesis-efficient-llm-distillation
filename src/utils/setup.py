@@ -20,6 +20,16 @@ def get_root_dir() -> str:
 
     return current_dir
 
+def ensure_dir_exists(directory: str) -> None:
+    """
+    Ensures that the specified directory exists. If it does not, it creates it.
+
+    Args:
+        directory (str): The directory to ensure exists.
+    """
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
 def set_seed(seed: int = 42) -> None:
     """
     Sets the seed for reproducibility.
