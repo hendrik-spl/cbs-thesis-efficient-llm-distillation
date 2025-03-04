@@ -9,7 +9,7 @@ dependencies = [
     "datasets>=3.3.2",
     "ipykernel>=6.29.5",
     "matplotlib>=3.10.0",
-    "numpy>=2.2.3",
+    "numpy==1.26.4",
     "ollama-python>=0.1.2",
     "pandas>=2.2.3",
     "scikit-learn>=1.6.1",
