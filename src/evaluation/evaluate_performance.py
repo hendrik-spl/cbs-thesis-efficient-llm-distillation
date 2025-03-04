@@ -1,56 +1,39 @@
-from sklearn.metrics import accuracy_score, confusion_matrix
-import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
-from tqdm import tqdm
-from codecarbon import EmissionsTracker
+import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 
-from src.models.model_utils import query_ollama
-from src.prompts.sentiment import get_sentiment_prompt
-from src.utils.clean_outputs import clean_llm_output_to_int
-from src.data.process_datasets import get_processed_dataset
+from src.data.load_results import load_model_outputs
 
-def evaluate_performance_sentiment(model, runs):
+def measure_performance_sentiment(results_path):
     """
-    Evaluate the performance of a model on the sentiment analysis task.
+    Load the results of a sentiment analysis model and display the confusion matrix.
 
-    Parameters:
-        model (str): The model to evaluate. For example 'llama3.2:1b'.
-        runs (int): The number of runs to evaluate the model on.
-
+    Args:
+        results_path (str): The path to the results file to load
+        
     Returns:
         None
     """
-    _, test_sentences, _, test_labels = get_processed_dataset("sentiment")
-    
-    pred_labels = []
-    prompts = [get_sentiment_prompt(test_sentences[i]) for i in range(runs)]
+    results = load_model_outputs(results_path)
 
-    with EmissionsTracker(
-        project_name="model-distillation",
-        experiment_id="123",
-        tracking_mode="process",
-        output_dir="results/metrics/emissions",
-        allow_multiple_runs=True,
-        log_level="warning"
-    ) as tracker:
-        for prompt in tqdm(prompts):
-            predicted_label = query_ollama(model=model, prompt=prompt)
-            pred_labels.append(predicted_label)
+    # Define the ordering of classes in reverse (Positive first)
+    classes = [2, 1, 0]  # Positive, Neutral, Negative
+    class_names = ['Positive', 'Neutral', 'Negative']
 
-    pred_labels = [clean_llm_output_to_int(pred_labels[i]) for i in range(runs)]
+    true_labels = [results['data'][i]['true_label'] for i in range(len(results['data']))]
+    pred_labels = [results['data'][i]['pred_label'] for i in range(len(results['data']))]
     
-    accuracy = accuracy_score(test_labels[:runs], pred_labels)
-    confusion = confusion_matrix(test_labels[:runs], pred_labels)
+    accuracy = accuracy_score(true_labels, pred_labels)
+    f1 = f1_score(true_labels, pred_labels, average='weighted')
+    confusion = confusion_matrix(true_labels, pred_labels, labels=classes)
 
     plt.figure(figsize=(6, 6))
     sns.heatmap(confusion, annot=True, fmt='g', cmap='Blues', cbar=False)
-    plt.title(f'Confusion matrix for {model} on sentiment analysis')
-    plt.xticks(ticks=[0.5, 1.5, 2.5], labels=['Negative', 'Neutral', 'Positive'])
-    plt.yticks(ticks=[0.5, 1.5, 2.5], labels=['Negative', 'Neutral', 'Positive'])
-    plt.text(0.5, -0.1, f'Accuracy: {accuracy:.2f}', ha='center', va='center', transform=plt.gca().transAxes)
+    plt.title(results_path)
+    plt.xticks(ticks=np.arange(len(class_names)) + 0.5, labels=class_names)
+    plt.yticks(ticks=np.arange(len(class_names)) + 0.5, labels=class_names, rotation=0)
+    plt.text(0.5, -0.15, f'Accuracy: {accuracy:.2f} | F1-Score: {f1:.2f}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=12)
     plt.xlabel('Predicted labels')
     plt.ylabel('True labels')
     plt.show()
-
-    print(f"Energy Consumption: {tracker._total_energy.kWh:.5f} kWh")
-    print(f"CO2 Emissions: {tracker.final_emissions:.5f} kgCO2")

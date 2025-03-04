@@ -13,21 +13,14 @@ from src.models.model_utils import query_ollama
 from src.prompts.sentiment import get_sentiment_prompt
 from src.utils.clean_outputs import clean_llm_output_to_int
 from src.utils.setup import ensure_dir_exists
-
-def parse_arguments():
-    parser = argparse.ArgumentParser(description="Load a model and run queries")
-    parser.add_argument("--model_name", type=str, required=True, help="Name of the model to load")
-    parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset")
-    parser.add_argument("--save_outputs", type=bool, default=True, help="Whether to save the outputs")
-    return parser.parse_args()
+from src.evaluation.evaluate import evaluate_model
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run inference with LLM models")
     parser.add_argument("--model_name", type=str, required=True, help="Name of the model to load (e.g., 'llama3.2:1b')")
     parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment')")
     parser.add_argument("--limit", type=int, default=10, help="Limit the number of samples to process (default: 10)")
-    parser.add_argument("--save_outputs", action="store_true", help="Save the outputs to a file")
-    parser.set_defaults(save_outputs=True)
+    parser.add_argument("--save_outputs", type=bool, default=True, help="Whether to save the outputs to a file")
     return parser.parse_args()
 
 def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str):
@@ -97,14 +90,18 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str):
         with open(output_path, "w") as f:
             json.dump(results, f, indent=2)
 
+    return output_path
+
 def main():
     args = parse_arguments()
 
-    run_inference(
-        model_name=args.model_name, 
-        dataset=args.dataset,
-        limit=args.limit,
-        save_outputs=args.save_outputs)
+    output_path = run_inference(
+                    model_name=args.model_name, 
+                    dataset=args.dataset,
+                    limit=args.limit,
+                    save_outputs=args.save_outputs)
+    
+    evaluate_model(results_path=output_path, dataset=args.dataset)
 
 if __name__ == "__main__":
     main()
