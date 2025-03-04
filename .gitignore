@@ -159,3 +159,9 @@ cython_debug/
 
 # csv files
 *.csv
+
+# txt files, e.g. codecarbon powermetrics logs
+*.txt
+
+# json files, e.g. results
+*.json
