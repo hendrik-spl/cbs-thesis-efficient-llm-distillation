@@ -78,7 +78,10 @@ else
     fi
 fi
 
-# cd "$REPO_DIR"
+# Quick fix: Use the copy mode to hide this warning:
+# warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance. 
+# If the cache and target directories are on different filesystems, hardlinking may not be supported.
+export UV_LINK_MODE=copy
 
 # Activate uv environment
 echo_info "Activating uv environment and installing dependencies..."
