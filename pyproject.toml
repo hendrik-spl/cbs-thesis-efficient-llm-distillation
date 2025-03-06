@@ -14,7 +14,6 @@ dependencies = [
     "pandas>=2.2.3",
     "scikit-learn>=1.6.1",
     "seaborn>=0.13.2",
-    "tensorflow-macos>=2.14.0",
     "tqdm>=4.67.1",
     "wandb>=0.19.7",
 ]

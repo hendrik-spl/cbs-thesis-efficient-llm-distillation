@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 # init.sh
 
-# Exit immediately if a command exits with a non-zero status
-set -e
-
 # Function to display info messages
 function echo_info {
     echo -e "\033[1;34m[INFO]\033[0m $1"
@@ -52,7 +49,7 @@ if command -v nvidia-smi > /dev/null 2>&1; then
     echo_info "NVIDIA GPU found:"
     nvidia-smi
 else
-    echo_error "No GPU detected or driver missing."
+    echo_info "No GPU detected or driver missing."
 fi
 
 # Install uv if not already installed
@@ -68,9 +65,6 @@ fi
 REPO_DIR="cbs-thesis-efficient-llm-distillation"
 REPO_URL="https://github.com/hendrik-spl/${REPO_DIR}.git"
 
-# Move one directory up to check if the repository is already cloned
-cd ..
-
 if [ ! -d "$REPO_DIR" ]; then
     echo_info "Cloning repository from GitHub..."
     git clone "$REPO_URL"
@@ -84,6 +78,8 @@ else
     fi
 fi
 
+cd "$REPO_DIR"
+
 # Activate uv environment
 echo_info "Activating uv environment and installing dependencies..."
 uv venv .venv
@@ -91,8 +87,12 @@ uv sync
 
 # Install tensorflow dependent on environment
 if [[ "$RUNNING_ON_CLOUD" == "true" ]]; then
-    echo_info "Installing tf for Linux UCloud environment..."
+    echo_info "Installing tf for Linux UCloud environment with cuda support..."
     uv add tensorflow[and-cuda]
+    if ! command -v nvidia-smi > /dev/null 2>&1; then
+        echo_info "Installing tensorflow for CPU-only support..."
+        uv add tensorflow
+    fi
 else
     echo_info "Installing tf for local MacOS environment..."
     uv add tensorflow-macos
@@ -102,8 +102,5 @@ fi
 echo_info "Setting environment variable for reproducibility..."
 export TF_DETERMINISTIC_OPS=1
 export TF_CUDNN_DETERMINISTIC=1
-
-# Revert exit immediately if a command exits with a non-zero status
-set +e
 
 echo_info "Initialization complete."
