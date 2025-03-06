@@ -15,6 +15,7 @@ from src.prompts.sentiment import get_sentiment_prompt
 from src.utils.clean_outputs import clean_llm_output_to_int
 from src.utils.setup import ensure_dir_exists, set_seed
 from src.evaluation.evaluate import evaluate_performance
+from src.evaluation.eval_utils import get_duration
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run inference with LLM models")
@@ -73,6 +74,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
                 print(f"Error querying model: {e}")
                 return # Exit early
             
+    wandb.log({"inference_duration": get_duration(wandb.run.name)})
     wandb.log({"emissions": tracker.final_emissions})
     wandb.log({"energy_consumption": tracker._total_energy.kWh})
 
@@ -93,20 +95,24 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
         output_path = f"{output_dir}/{wandb.run.name}_{dataset}_{timestamp}.json"
         with open(output_path, "w") as f:
             json.dump(results, f, indent=2)
-
-    return output_path
+        return output_path
+    
+    return None # No output path if not saving
 
 def main():
     set_seed(42)
-    
     args = parse_arguments()
+
+    tags = [
+        "test"
+    ]
 
     config = {
         "model_name": args.model_name,
         "dataset": args.dataset
     }
 
-    wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-inference",config=config)
+    wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-inference", tags=tags, config=config)
 
     output_path = run_inference(
                     model_name=args.model_name, 
@@ -115,7 +121,8 @@ def main():
                     save_outputs=args.save_outputs,
                     wandb=wandb)
     
-    evaluate_performance(results_path=output_path, dataset=args.dataset, wandb=wandb)
+    if output_path:
+        evaluate_performance(results_path=output_path, dataset=args.dataset, wandb=wandb)
 
 if __name__ == "__main__":
     main()

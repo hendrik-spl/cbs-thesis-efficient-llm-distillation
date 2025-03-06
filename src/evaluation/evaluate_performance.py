@@ -32,14 +32,15 @@ def measure_performance_sentiment(results_path, wandb: wandb):
     
     wandb.log({"accuracy": accuracy})
     wandb.log({"f1": f1})
-    wandb.log({"confusion_matrix": wandb.Image(plt)})
 
     plt.figure(figsize=(6, 6))
     sns.heatmap(confusion, annot=True, fmt='g', cmap='Blues', cbar=False)
     plt.title(wandb.run.name)
     plt.xticks(ticks=np.arange(len(class_names)) + 0.5, labels=class_names)
     plt.yticks(ticks=np.arange(len(class_names)) + 0.5, labels=class_names, rotation=0)
-    plt.text(0.5, -0.15, f'Accuracy: {accuracy:.2f} | F1-Score: {f1:.2f}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=12)
+    plt.text(0.5, -0.11, f'Accuracy: {accuracy:.2f} | F1-Score: {f1:.2f}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=8)
     plt.xlabel('Predicted labels')
     plt.ylabel('True labels')
     plt.show()
+    
+    wandb.log({"confusion_matrix": wandb.Image(plt)})
