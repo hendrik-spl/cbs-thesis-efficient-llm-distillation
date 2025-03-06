@@ -3,6 +3,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import json
+import wandb
 import argparse
 from tqdm import tqdm
 from datetime import datetime
@@ -12,8 +13,8 @@ from src.data.process_datasets import get_processed_dataset
 from src.models.model_utils import query_ollama
 from src.prompts.sentiment import get_sentiment_prompt
 from src.utils.clean_outputs import clean_llm_output_to_int
-from src.utils.setup import ensure_dir_exists
-from src.evaluation.evaluate import evaluate_model
+from src.utils.setup import ensure_dir_exists, set_seed
+from src.evaluation.evaluate import evaluate_performance
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run inference with LLM models")
@@ -23,7 +24,7 @@ def parse_arguments():
     parser.add_argument("--save_outputs", type=bool, default=True, help="Whether to save the outputs to a file")
     return parser.parse_args()
 
-def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str):
+def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, wandb: wandb) -> str:
     """
     Run inference with a given model on a dataset.
 
@@ -36,7 +37,6 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str):
     Returns:
         None
     """
-
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     print(f"Running inference with model {model_name} on dataset {dataset}.")
 
@@ -53,14 +53,15 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str):
     results = {}
     results['data'] = []
     results['config'] = {
+        'wandb_run_id': wandb.run.id,
         'model_name': model_name,
         'dataset': dataset,
-        "timestamp" : timestamp
+        "timestamp" : timestamp,
     }
 
     with EmissionsTracker(
         project_name="model-distillation",
-        experiment_id="123",
+        experiment_id=wandb.run.name,
         tracking_mode="process",
         output_dir="results/metrics/emissions",
         log_level="warning"
@@ -71,6 +72,9 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str):
             except Exception as e:
                 print(f"Error querying model: {e}")
                 return # Exit early
+            
+    wandb.log({"emissions": tracker.final_emissions})
+    wandb.log({"energy_consumption": tracker._total_energy.kWh})
 
     pred_labels = [clean_llm_output_to_int(label) for label in pred_labels]
 
@@ -86,22 +90,32 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str):
     if save_outputs:
         output_dir = f"data/inference_outputs/{model_name}"
         ensure_dir_exists(output_dir)
-        output_path = f"{output_dir}/{dataset}_{timestamp}.json"
+        output_path = f"{output_dir}/{wandb.run.name}_{dataset}_{timestamp}.json"
         with open(output_path, "w") as f:
             json.dump(results, f, indent=2)
 
     return output_path
 
 def main():
+    set_seed(42)
+    
     args = parse_arguments()
+
+    config = {
+        "model_name": args.model_name,
+        "dataset": args.dataset
+    }
+
+    wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-inference",config=config)
 
     output_path = run_inference(
                     model_name=args.model_name, 
                     dataset=args.dataset,
                     limit=args.limit,
-                    save_outputs=args.save_outputs)
+                    save_outputs=args.save_outputs,
+                    wandb=wandb)
     
-    evaluate_model(results_path=output_path, dataset=args.dataset)
+    evaluate_performance(results_path=output_path, dataset=args.dataset, wandb=wandb)
 
 if __name__ == "__main__":
     main()

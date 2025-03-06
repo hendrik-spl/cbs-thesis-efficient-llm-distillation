@@ -41,6 +41,7 @@ def set_seed(seed: int = 42) -> None:
     random.seed(seed)
     tf.random.set_seed(seed)
     keras.utils.set_random_seed(seed)
+    return seed
 
 def setup_gpu() -> None:
     """

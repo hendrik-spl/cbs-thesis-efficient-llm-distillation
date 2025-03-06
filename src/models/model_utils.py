@@ -1,6 +1,6 @@
 import requests
 
-def query_ollama(model, prompt):
+def query_ollama(model, prompt, temperature=0.1, seed=42):
     """
     Sends a chat request to the Ollama API with the given model and prompt.
 
@@ -20,6 +20,10 @@ def query_ollama(model, prompt):
                 "content": prompt
             }
         ],
+        "options": {
+            "temperature": temperature,
+            "seed": seed
+        },
         "stream": False,
     }
 
