@@ -60,11 +60,14 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
         "timestamp" : timestamp,
     }
 
+    emissions_output_dir = "results/metrics/emissions"
+    ensure_dir_exists(emissions_output_dir)
+
     with EmissionsTracker(
         project_name="model-distillation",
         experiment_id=wandb.run.name,
         tracking_mode="process",
-        output_dir="results/metrics/emissions",
+        output_dir=emissions_output_dir,
         log_level="warning"
         ) as tracker:
         for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset}"):
@@ -90,9 +93,9 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
         })
 
     if save_outputs:
-        output_dir = f"data/inference_outputs/{model_name}"
-        ensure_dir_exists(output_dir)
-        output_path = f"{output_dir}/{wandb.run.name}_{dataset}_{timestamp}.json"
+        inference_output_dir = f"data/inference_outputs/{model_name}"
+        ensure_dir_exists(inference_output_dir)
+        output_path = f"{inference_output_dir}/{wandb.run.name}_{dataset}_{timestamp}.json"
         with open(output_path, "w") as f:
             json.dump(results, f, indent=2)
         return output_path
