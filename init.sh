@@ -78,7 +78,7 @@ else
     fi
 fi
 
-cd "$REPO_DIR"
+# cd "$REPO_DIR"
 
 # Activate uv environment
 echo_info "Activating uv environment and installing dependencies..."
@@ -87,9 +87,10 @@ uv sync
 
 # Install tensorflow dependent on environment
 if [[ "$RUNNING_ON_CLOUD" == "true" ]]; then
-    echo_info "Installing tf for Linux UCloud environment with cuda support..."
-    uv add tensorflow[and-cuda]
-    if ! command -v nvidia-smi > /dev/null 2>&1; then
+    if command -v nvidia-smi > /dev/null 2>&1; then
+        echo_info "Installing tf for Linux UCloud environment with cuda support..."
+        uv add "tensorflow[and-cuda]"
+    else
         echo_info "Installing tensorflow for CPU-only support..."
         uv add tensorflow
     fi
