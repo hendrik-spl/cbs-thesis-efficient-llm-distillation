@@ -88,19 +88,19 @@ echo_info "Activating uv environment and installing dependencies..."
 uv venv .venv
 uv sync
 
-# Install tensorflow dependent on environment
-if [[ "$RUNNING_ON_CLOUD" == "true" ]]; then
-    if command -v nvidia-smi > /dev/null 2>&1; then
-        echo_info "Installing tf for Linux UCloud environment with cuda support..."
-        uv add "tensorflow[and-cuda]"
-    else
-        echo_info "Installing tensorflow for CPU-only support..."
-        uv add tensorflow
-    fi
-else
-    echo_info "Installing tf for local MacOS environment..."
-    uv add tensorflow-macos
-fi
+# # Install tensorflow dependent on environment
+# if [[ "$RUNNING_ON_CLOUD" == "true" ]]; then
+#     if command -v nvidia-smi > /dev/null 2>&1; then
+#         echo_info "Installing tf for Linux UCloud environment with cuda support..."
+#         uv add "tensorflow[and-cuda]"
+#     else
+#         echo_info "Installing tensorflow for CPU-only support..."
+#         uv add tensorflow
+#     fi
+# else
+#     echo_info "Installing tf for local MacOS environment..."
+#     uv add tensorflow-macos
+# fi
 
 # Ensuring reproducibility
 echo_info "Setting environment variable for reproducibility..."
