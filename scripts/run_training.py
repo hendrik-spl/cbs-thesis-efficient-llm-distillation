@@ -99,7 +99,7 @@ def main():
 
     run_training(
         student_model = args.student_model,
-        teacher_student = args.teacher,
+        teacher_student = args.teacher_model,
         dataset = args.dataset,
         epochs = args.epochs,
         json_file_name = args.json_file_name,
