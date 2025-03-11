@@ -1,4 +1,5 @@
 import os
+import torch
 import keras
 import random
 import platform
@@ -41,6 +42,10 @@ def set_seed(seed: int = 42) -> None:
     random.seed(seed)
     tf.random.set_seed(seed)
     keras.utils.set_random_seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
     return seed
 
 def setup_gpu() -> None:

@@ -21,7 +21,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Run inference with LLM models")
     parser.add_argument("--model_name", type=str, required=True, help="Name of the model to load (e.g., 'llama3.2:1b')")
     parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment')")
-    parser.add_argument("--limit", type=int, default=10, help="Limit the number of samples to process (default: 10)")
+    parser.add_argument("--limit", type=int, help="Limit the number of samples to process (default: 10)")
     parser.add_argument("--save_outputs", type=bool, default=True, help="Whether to save the outputs to a file")
     return parser.parse_args()
 
@@ -93,9 +93,9 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
         })
 
     if save_outputs:
-        inference_output_dir = f"data/inference_outputs/{model_name}"
+        inference_output_dir = f"models/{dataset}/teacher/{model_name}/inference_outputs"
         ensure_dir_exists(inference_output_dir)
-        output_path = f"{inference_output_dir}/{wandb.run.name}_{dataset}_{timestamp}.json"
+        output_path = f"{inference_output_dir}/{wandb.run.name}_{timestamp}.json"
         with open(output_path, "w") as f:
             json.dump(results, f, indent=2)
         return output_path

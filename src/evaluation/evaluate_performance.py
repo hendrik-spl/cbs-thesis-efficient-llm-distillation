@@ -41,6 +41,5 @@ def measure_performance_sentiment(results_path, wandb: wandb):
     plt.text(0.5, -0.11, f'Accuracy: {accuracy:.2f} | F1-Score: {f1:.2f}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=8)
     plt.xlabel('Predicted labels')
     plt.ylabel('True labels')
-    plt.show()
     
     wandb.log({"confusion_matrix": wandb.Image(plt)})
