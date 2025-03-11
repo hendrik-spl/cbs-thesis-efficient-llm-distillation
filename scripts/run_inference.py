@@ -38,7 +38,6 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
     Returns:
         None
     """
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     print(f"Running inference with model {model_name} on dataset {dataset}.")
 
     sentences, true_labels = get_processed_hf_dataset("sentiment", split=False)
@@ -57,7 +56,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
         'wandb_run_id': wandb.run.id,
         'model_name': model_name,
         'dataset': dataset,
-        "timestamp" : timestamp,
+        "timestamp" : datetime.now().strftime('%Y%m%d_%H%M%S'),
     }
 
     emissions_output_dir = "results/metrics/emissions"
@@ -100,7 +99,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
     if save_outputs:
         inference_output_dir = f"models/{dataset}/teacher/{model_name}/inference_outputs"
         ensure_dir_exists(inference_output_dir)
-        output_path = f"{inference_output_dir}/{wandb.run.name}_{timestamp}.json"
+        output_path = f"{inference_output_dir}/{wandb.run.name}.json"
         with open(output_path, "w") as f:
             json.dump(results, f, indent=2)
         return output_path
