@@ -85,10 +85,10 @@ export UV_LINK_MODE=copy
 
 # Activate uv environment
 echo_info "Activating uv environment and installing dependencies..."
+echo_info "Current directory: $(pwd)"
 
 # Check if .venv exists and remove if it's invalid
 if [ -d ".venv" ]; then
-    # Check if it contains a Python executable
     if [ ! -f ".venv/bin/python" ] && [ ! -f ".venv/Scripts/python.exe" ]; then
         echo_info "Found invalid .venv directory. Removing it..."
         rm -rf .venv
@@ -98,27 +98,11 @@ fi
 uv venv .venv
 uv sync
 
-# # Install tensorflow dependent on environment
-# if [[ "$RUNNING_ON_CLOUD" == "true" ]]; then
-#     if command -v nvidia-smi > /dev/null 2>&1; then
-#         echo_info "Installing tf for Linux UCloud environment with cuda support..."
-#         uv add "tensorflow[and-cuda]"
-#     else
-#         echo_info "Installing tensorflow for CPU-only support..."
-#         uv add tensorflow
-#     fi
-# else
-#     echo_info "Installing tf for local MacOS environment..."
-#     uv add tensorflow-macos
-# fi
-
 # Ensuring reproducibility for TensorFlow
 echo_info "Setting environment variable for reproducibility..."
 export TF_DETERMINISTIC_OPS=1
 export TF_CUDNN_DETERMINISTIC=1
 export CUBLAS_WORKSPACE_CONFIG=:16:8
-
-# Add to init.sh after the environment setup
 
 # Install Ollama if not already installed
 if ! command -v ollama > /dev/null 2>&1; then
@@ -127,13 +111,5 @@ if ! command -v ollama > /dev/null 2>&1; then
 else
     echo_info "Ollama is already installed."
 fi
-
-# Start Ollama server in the background
-echo_info "Starting Ollama server..."
-ollama serve &
-
-# Download the required models
-echo_info "Pulling required models..."
-ollama pull llama3.2:1b
 
 echo_info "Initialization complete."
