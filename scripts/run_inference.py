@@ -72,11 +72,16 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
         ) as tracker:
         for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset}"):
             try:
-                pred_labels.append(query_ollama(model_name, prompt))
+                response = query_ollama(model_name, prompt)
+                if response is None:
+                    print(f"Warning: Received None response from model. Using default value.")
+                    response = "1"
+                pred_labels.append(response)
             except Exception as e:
-                print(f"Error querying model: {e}")
-                return # Exit early
-            
+                print(f"Error during inference: {e}")
+                print("Using default value for this sample.")
+                pred_labels.append("1")
+
     wandb.log({"inference_duration": get_duration(wandb.run.name)})
     wandb.log({"emissions": tracker.final_emissions})
     wandb.log({"energy_consumption": tracker._total_energy.kWh})

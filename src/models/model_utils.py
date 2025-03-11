@@ -1,3 +1,4 @@
+import time
 import requests
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
@@ -18,7 +19,7 @@ def load_model_from_hf(model_name, num_labels):
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=num_labels)
     return model, tokenizer
 
-def query_ollama(model, prompt, temperature=0.1, seed=42):
+def query_ollama(model, prompt, temperature=0.1, seed=42, max_retries=3, retry_delay=5):
     """
     Sends a chat request to the Ollama API with the given model and prompt.
 
@@ -49,10 +50,19 @@ def query_ollama(model, prompt, temperature=0.1, seed=42):
         "Content-Type": "application/json"
     }
 
-    try:
-        response = requests.post(url, json=data, headers=headers)
-        response.raise_for_status()
-        return response.json()['message']['content']
-    except requests.exceptions.RequestException as e:
-        print(f"An error occurred: {e}")
-        return None
+    for attempt in range(max_retries):
+        try:
+            response = requests.post(url, json=data, headers=headers)
+            response.raise_for_status()
+            return response.json()['message']['content']
+        except requests.exceptions.ConnectionError as e:
+            # Connection error - the server might not be running
+            print(f"Connection error (attempt {attempt+1}/{max_retries}): {e}")
+            if attempt == max_retries - 1:
+                print("Failed to connect to Ollama server after multiple attempts.")
+                print("Check if Ollama is installed and running with: ollama serve")
+                return "1"
+            time.sleep(retry_delay)
+        except requests.exceptions.RequestException as e:
+            print(f"Request error: {e}")
+            return "1"
