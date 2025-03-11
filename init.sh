@@ -102,6 +102,7 @@ uv sync
 echo_info "Setting environment variable for reproducibility..."
 export TF_DETERMINISTIC_OPS=1
 export TF_CUDNN_DETERMINISTIC=1
+export TF_ENABLE_ONEDNN_OPTS=0
 export CUBLAS_WORKSPACE_CONFIG=:16:8
 
 # Install Ollama if not already installed
