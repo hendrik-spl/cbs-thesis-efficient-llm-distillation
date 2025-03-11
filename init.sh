@@ -85,6 +85,16 @@ export UV_LINK_MODE=copy
 
 # Activate uv environment
 echo_info "Activating uv environment and installing dependencies..."
+
+# Check if .venv exists and remove if it's invalid
+if [ -d ".venv" ]; then
+    # Check if it contains a Python executable
+    if [ ! -f ".venv/bin/python" ] && [ ! -f ".venv/Scripts/python.exe" ]; then
+        echo_info "Found invalid .venv directory. Removing it..."
+        rm -rf .venv
+    fi
+fi
+
 uv venv .venv
 uv sync
 
@@ -107,5 +117,23 @@ echo_info "Setting environment variable for reproducibility..."
 export TF_DETERMINISTIC_OPS=1
 export TF_CUDNN_DETERMINISTIC=1
 export CUBLAS_WORKSPACE_CONFIG=:16:8
+
+# Add to init.sh after the environment setup
+
+# Install Ollama if not already installed
+if ! command -v ollama > /dev/null 2>&1; then
+    echo_info "Installing Ollama..."
+    curl -fsSL https://ollama.com/install.sh | sh
+else
+    echo_info "Ollama is already installed."
+fi
+
+# Start Ollama server in the background
+echo_info "Starting Ollama server..."
+ollama serve &
+
+# Download the required models
+echo_info "Pulling required models..."
+ollama pull llama3.2:1b
 
 echo_info "Initialization complete."
