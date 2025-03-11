@@ -31,3 +31,15 @@ Welcome to the repository for our Master’s thesis project, which explores **su
 * Run `wandb login` to initialize your login and add your API key when prompted.
 
 3. **Further Instructions will follow as project develops**
+
+## Main Scripts
+
+1. **Run Inference**
+    ```python3
+    uv run scripts/run_inference.py --model_name llama3.2:1b --dataset sentiment --limit 20
+    ```
+
+2. **Run Training**
+    ```python3
+    uv run scripts/run_training.py --student_model google-t5:t5-small --teacher_model llama3.2:1b --dataset sentiment --json_file_name smooth-surf-5.json
+    ```

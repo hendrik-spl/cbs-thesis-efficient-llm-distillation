@@ -112,4 +112,9 @@ else
     echo_info "Ollama is already installed."
 fi
 
+# Pull the needed models
+echo_info "Pulling models from ollama..."
+ollama pull llama3.2:1b
+echo_info "Successfully pulled llama3.2:1b."
+
 echo_info "Initialization complete."
