@@ -1,6 +1,6 @@
 import json
 
-def load_model_outputs(input_path):
+def load_model_outputs_from_json(input_path):
     """
     Load the output labels from a JSON file.
 

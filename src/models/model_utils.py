@@ -1,4 +1,10 @@
 import requests
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+def load_model_from_hf(model_name, num_labels):
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=num_labels)
+    return model, tokenizer
 
 def query_ollama(model, prompt, temperature=0.1, seed=42):
     """

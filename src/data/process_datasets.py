@@ -1,8 +1,8 @@
 from sklearn.model_selection import train_test_split
 
-from src.data.load_datasets import load_sentiment
+from src.data.load_datasets import load_sentiment_from_hf
 
-def get_processed_dataset(dataset, split: bool, test_size=0.2, random_state=42):
+def get_processed_hf_dataset(dataset, split: bool, test_size=0.2, random_state=42):
     """
     Splits the dataset into training and test sets.
 
@@ -16,7 +16,7 @@ def get_processed_dataset(dataset, split: bool, test_size=0.2, random_state=42):
         Tuple: A tuple containing the training and test sets of the dataset. The first two elements are the training and test sentences, and the last two elements are the training and test labels.
     """
     if dataset == "sentiment":
-        dataset = load_sentiment()
+        dataset = load_sentiment_from_hf()
         if not split:
             return dataset["sentence"], dataset["label"]
         train_sentences, test_sentences, train_labels, test_labels = train_test_split(dataset["sentence"], dataset["label"], test_size=test_size, random_state=random_state)

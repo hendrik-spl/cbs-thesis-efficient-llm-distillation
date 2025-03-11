@@ -9,7 +9,7 @@ from tqdm import tqdm
 from datetime import datetime
 from codecarbon import EmissionsTracker
 
-from src.data.process_datasets import get_processed_dataset
+from src.data.process_datasets import get_processed_hf_dataset
 from src.models.model_utils import query_ollama
 from src.prompts.sentiment import get_sentiment_prompt
 from src.utils.clean_outputs import clean_llm_output_to_int
@@ -41,7 +41,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     print(f"Running inference with model {model_name} on dataset {dataset}.")
 
-    sentences, true_labels = get_processed_dataset("sentiment", split=False)
+    sentences, true_labels = get_processed_hf_dataset("sentiment", split=False)
 
     if limit: 
         print(f"Limiting to {limit} samples.")

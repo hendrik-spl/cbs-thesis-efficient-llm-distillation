@@ -4,7 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 
-from src.data.load_results import load_model_outputs
+from src.data.load_results import load_model_outputs_from_json
 
 def measure_performance_sentiment(results_path, wandb: wandb):
     """
@@ -17,7 +17,7 @@ def measure_performance_sentiment(results_path, wandb: wandb):
     Returns:
         None
     """
-    results = load_model_outputs(results_path)
+    results = load_model_outputs_from_json(results_path)
 
     # Define the ordering of classes in reverse (Positive first)
     classes = [2, 1, 0]  # Positive, Neutral, Negative
