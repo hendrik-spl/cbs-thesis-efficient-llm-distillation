@@ -102,9 +102,10 @@ uv sync
 #     uv add tensorflow-macos
 # fi
 
-# Ensuring reproducibility
+# Ensuring reproducibility for TensorFlow
 echo_info "Setting environment variable for reproducibility..."
 export TF_DETERMINISTIC_OPS=1
 export TF_CUDNN_DETERMINISTIC=1
+export CUBLAS_WORKSPACE_CONFIG=:16:8
 
 echo_info "Initialization complete."
