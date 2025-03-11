@@ -19,7 +19,7 @@ def load_sentiment_from_hf(version="sentences_50agree"):
     return dataset['train']
 
 def load_sentiment_dataset_from_json(model_name, file_name, tokenizer, split_size=0.8):
-    path = f"data/inference_outputs/{file_name}"
+    path = f"models/sentiment/teacher/{model_name}/inference_outputs/{file_name}"
     dataset = load_model_outputs_from_json(path)
     sentences = [d['sentence'] for d in dataset['data']]
     labels = [d['pred_label'] for d in dataset['data']]
