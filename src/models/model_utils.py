@@ -61,8 +61,8 @@ def query_ollama(model, prompt, temperature=0.1, seed=42, max_retries=3, retry_d
             if attempt == max_retries - 1:
                 print("Failed to connect to Ollama server after multiple attempts.")
                 print("Check if Ollama is installed and running with: ollama serve")
-                return "1"
+                return None
             time.sleep(retry_delay)
         except requests.exceptions.RequestException as e:
             print(f"Request error: {e}")
-            return "1"
+            return None

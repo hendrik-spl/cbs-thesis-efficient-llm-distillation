@@ -73,13 +73,12 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
             try:
                 response = query_ollama(model_name, prompt)
                 if response is None:
-                    print(f"Warning: Received None response from model. Using default value.")
-                    response = "1"
-                pred_labels.append(response)
+                    print(f"Warning: Received None response from model for prompt: {prompt}")
+                    pred_labels.append(None)
+                else:
+                    pred_labels.append(response)
             except Exception as e:
                 print(f"Error during inference: {e}")
-                print("Using default value for this sample.")
-                pred_labels.append("1")
 
     wandb.log({"inference_duration": get_duration(wandb.run.name)})
     wandb.log({"emissions": tracker.final_emissions})
