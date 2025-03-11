@@ -34,14 +34,10 @@ def run_training(model_name: str, dataset: str, epochs: int, json_file_name: str
     if dataset == "sentiment":
         train_dataset, valid_dataset = load_sentiment_dataset_from_json(model_name, json_file_name, tokenizer)
 
-    model_output_dir = f"results/checkpoints/{model_name}_{timestamp}"
+    model_output_dir = f"models/checkpoints/{model_name}_{timestamp}"
     ensure_dir_exists(model_output_dir)
     emissions_output_dir = "results/metrics/emissions"
     ensure_dir_exists(emissions_output_dir)
-
-    # TODO:
-    # Check out videos about training with Hugging Face
-    # Define other training input parameters
 
     training_args = Seq2SeqTrainingArguments(
         output_dir=model_output_dir,
@@ -51,10 +47,11 @@ def run_training(model_name: str, dataset: str, epochs: int, json_file_name: str
         learning_rate=learning_rate,
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
-        save_strategy="epoch",
+        save_strategy="best",
+        save_total_limit=3,
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
-        greater_is_better=False,
+        seed=42
     )
 
     trainer = Seq2SeqTrainer(
@@ -62,24 +59,21 @@ def run_training(model_name: str, dataset: str, epochs: int, json_file_name: str
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=valid_dataset,
+        tokenizer=tokenizer
     )
 
     with EmissionsTracker(
         project_name="model-distillation",
-        experiment_id=wandb.run.name,
+        experiment_id=wandb_instance.run.name,
         tracking_mode="process",
         output_dir=emissions_output_dir,
         log_level="warning"
         ) as tracker:
         trainer.train()
 
-    wandb.log({"training_duration": get_duration(wandb.run.name)})
-    wandb.log({"emissions": tracker.final_emissions})
-    wandb.log({"energy_consumption": tracker._total_energy.kWh})
-
-    # get best model
-
-    # save the entire model
+    wandb_instance.log({"training_duration": get_duration(wandb_instance.run.name)})
+    wandb_instance.log({"emissions": tracker.final_emissions})
+    wandb_instance.log({"energy_consumption": tracker._total_energy.kWh})
 
 def main():
     set_seed(42)
