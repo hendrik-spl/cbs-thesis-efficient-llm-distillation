@@ -171,3 +171,6 @@ wandb/
 
 # the whole inspiration folder
 inspiration/
+
+# any files within a checkpoint folder
+checkpoints/
