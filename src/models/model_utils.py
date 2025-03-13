@@ -27,7 +27,6 @@ def clean_llm_output_to_int(text, extract_sentiment=False):
     if match:
         int_value = int(match.group())
     else:
-        print(f"Could not extract an integer from the text: {text}. Defaulting to -1.")
         int_value = -1
     
     # If not extracting sentiment, just return the int
