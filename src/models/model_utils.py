@@ -1,6 +1,7 @@
 import time
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import ollama
 from ollama import chat, ChatResponse
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 def load_model_from_hf(model_name, num_labels):
     """
@@ -47,11 +48,23 @@ def query_ollama(model, prompt, temperature=0.1, seed=42, max_retries=3, retry_d
             return response.message.content
         except Exception as e:
             print(f"Error in Ollama request (attempt {attempt+1}/{max_retries}): {e}")
-            if "not found" in str(e):
-                print("Model not found. Please pull the model from ollama first.")
-                return None
+            if "not found" in str(e) and "model" in str(e):
+                print("Model not found. Attempting to pull model from ollama.")
+                pull_model_from_ollama(model)
             if attempt == max_retries - 1:
                 print("Failed to get response from Ollama after multiple attempts.")
-                print("Check if Ollama is installed and running with: ollama serve")
                 return None
             time.sleep(retry_delay)
+
+def pull_model_from_ollama(model_name):
+    """
+    Pulls a model from the Ollama API.
+
+    Args:
+        model_name (str): The name of the model to pull.
+    """
+    try:
+        ollama.pull(model_name)
+        print(f"Model {model_name} pulled successfully.")
+    except Exception as e:
+        print(f"Failed to pull model {model_name}: {e}")
