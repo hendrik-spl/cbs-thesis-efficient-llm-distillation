@@ -40,7 +40,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
     """
     print(f"Running inference with model {model_name} on dataset {dataset}.")
 
-    sentences, true_labels = get_processed_hf_dataset("sentiment", split=False)
+    sentences, true_labels = get_processed_hf_dataset("sentiment", split_mode="none")
 
     if limit: 
         print(f"Limiting to {limit} samples.")
