@@ -48,13 +48,32 @@ def query_ollama(model, prompt, temperature=0.1, seed=42, max_retries=3, retry_d
             return response.message.content
         except Exception as e:
             print(f"Error in Ollama request (attempt {attempt+1}/{max_retries}): {e}")
-            if "not found" in str(e) and "model" in str(e):
-                print("Model not found. Attempting to pull model from ollama.")
-                pull_model_from_ollama(model)
             if attempt == max_retries - 1:
                 print("Failed to get response from Ollama after multiple attempts.")
                 return None
             time.sleep(retry_delay)
+
+def check_if_model_exists(model_name):
+    """
+    Checks if a model exists in the Ollama API.
+
+    Args:
+        model_name (str): The name of the model to check.
+
+    Returns:
+        bool: True if the model exists, False otherwise.
+    """
+    try:
+        list = ollama.list()
+        for model in list:
+            if model[1][0].model == model_name:
+                return True
+            else:
+                print(f"Model {model_name} not found in Ollama. Attempting to pull model.")
+                pull_model_from_ollama(model_name)
+    except Exception as e:
+        print(f"Failed to check if model {model_name} exists: {e}")
+        return False
 
 def pull_model_from_ollama(model_name):
     """
