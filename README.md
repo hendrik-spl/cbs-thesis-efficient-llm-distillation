@@ -20,7 +20,11 @@ Welcome to the repository for our Master’s thesis project, which explores **su
 
 ## Getting Started
 
-1. **Initialize the environment**
+1. **Load environment variables**
+* Duplicate the `.env.example` file, and rename it to `.env`.
+* Add the required API tokens.
+
+2. **Initialize the environment**
     ```bash
     source init.sh
     ```
@@ -30,7 +34,7 @@ Welcome to the repository for our Master’s thesis project, which explores **su
 2. **Set up Weights & Biases**
 * Run `wandb login` to initialize your login and add your API key when prompted.
 
-3. **Further Instructions will follow as project develops**
+4. **Further Instructions will follow as project develops**
 
 ## Main Scripts
 

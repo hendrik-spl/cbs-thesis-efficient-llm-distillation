@@ -98,6 +98,17 @@ fi
 uv venv .venv
 uv sync
 
+# Source environment variables from .env file
+echo_info "Loading credentials from .env file..."
+if [ -f .env ]; then
+  set -a
+  source .env
+  set +a
+  echo_info "Credentials loaded successfully."
+else
+  echo_info "No .env file found. Create one with your WANDB_API_KEY and HF_TOKEN."
+fi
+
 # Ensuring reproducibility for TensorFlow
 echo_info "Setting environment variable for reproducibility..."
 export TF_DETERMINISTIC_OPS=1
@@ -112,10 +123,5 @@ if ! command -v ollama > /dev/null 2>&1; then
 else
     echo_info "Ollama is already installed."
 fi
-
-# Pull the needed models
-echo_info "Pulling models from ollama..."
-ollama pull llama3.2:1b
-echo_info "Successfully pulled llama3.2:1b."
 
 echo_info "Initialization complete."
