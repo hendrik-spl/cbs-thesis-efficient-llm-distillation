@@ -47,18 +47,8 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
         sentences = sentences[:limit]
         true_labels = true_labels[:limit]
 
-    # limit to some samples
-    sentences = sentences[4476:4478]
-    true_labels = true_labels[4476:4478]
-
     prompts = [get_sentiment_prompt(sentences[i]) for i in range(len(sentences))]
     
-    for i in range(len(sentences)):
-        print(f"Sentence: {sentences[i]}")
-        print(f"True label: {true_labels[i]}")
-        print(f"Prompt: {prompts[i]}")
-        print()
-
     pred_labels = []
     results = {}
     results['data'] = []
