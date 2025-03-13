@@ -208,7 +208,7 @@ dependencies = [
     { name = "ipykernel" },
     { name = "matplotlib" },
     { name = "numpy" },
-    { name = "ollama-python" },
+    { name = "ollama" },
     { name = "pandas" },
     { name = "scikit-learn" },
     { name = "seaborn" },
@@ -227,7 +227,7 @@ requires-dist = [
     { name = "ipykernel", specifier = ">=6.29.5" },
     { name = "matplotlib", specifier = ">=3.10.0" },
     { name = "numpy", specifier = "==1.26.4" },
-    { name = "ollama-python", specifier = ">=0.1.2" },
+    { name = "ollama", specifier = ">=0.4.7" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "scikit-learn", specifier = ">=1.6.1" },
     { name = "seaborn", specifier = ">=0.13.2" },
@@ -844,7 +844,7 @@ wheels = [
 
 [[package]]
 name = "httpx"
-version = "0.26.0"
+version = "0.27.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -853,9 +853,9 @@ dependencies = [
     { name = "idna" },
     { name = "sniffio" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bd/26/2dc654950920f499bd062a211071925533f821ccdca04fa0c2fd914d5d06/httpx-0.26.0.tar.gz", hash = "sha256:451b55c30d5185ea6b23c2c793abf9bb237d2a7dfb901ced6ff69ad37ec1dfaf", size = 125671 }
+sdist = { url = "https://files.pythonhosted.org/packages/78/82/08f8c936781f67d9e6b9eeb8a0c8b4e406136ea4c3d1f89a5db71d42e0e6/httpx-0.27.2.tar.gz", hash = "sha256:f7c2be1d2f3c3c3160d441802406b206c2b76f5947b11115e6df10c6c65e66c2", size = 144189 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/39/9b/4937d841aee9c2c8102d9a4eeb800c7dad25386caabb4a1bf5010df81a57/httpx-0.26.0-py3-none-any.whl", hash = "sha256:8915f5a3627c4d47b73e8202457cb28f1266982d1159bd5779d86a80c0eab1cd", size = 75862 },
+    { url = "https://files.pythonhosted.org/packages/56/95/9377bcb415797e44274b51d46e3249eba641711cf3348050f76ee7b15ffc/httpx-0.27.2-py3-none-any.whl", hash = "sha256:7bb2708e112d8fdd7829cd4243970f0c223274051cb35ee80c03301ee29a3df0", size = 76395 },
 ]
 
 [[package]]
@@ -1518,18 +1518,16 @@ wheels = [
 ]
 
 [[package]]
-name = "ollama-python"
-version = "0.1.2"
+name = "ollama"
+version = "0.4.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic" },
-    { name = "requests" },
-    { name = "responses" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1a/ce/4b706a333f1dbf0cea1745e121b135f8df378f9ea6df019de2eedadf40ef/ollama_python-0.1.2.tar.gz", hash = "sha256:85161427858a77603bf035e1d7acefcd330d656a9b95bae79c5f55cced3b3e30", size = 14065 }
+sdist = { url = "https://files.pythonhosted.org/packages/b0/6d/dc77539c735bbed5d0c873fb029fb86aa9f0163df169b34152914331c369/ollama-0.4.7.tar.gz", hash = "sha256:891dcbe54f55397d82d289c459de0ea897e103b86a3f1fad0fdb1895922a75ff", size = 12843 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bc/d3/552575843a7e475f6a3a573ccdcac0a9046e03330e29d0416d3d5cc7d5ba/ollama_python-0.1.2-py3-none-any.whl", hash = "sha256:0b0d2fcd97d823a424446c02febb7c7f7188287c01e5ee7210d0e42ca928644a", size = 16247 },
+    { url = "https://files.pythonhosted.org/packages/31/83/c3ffac86906c10184c88c2e916460806b072a2cfe34cdcaf3a0c0e836d39/ollama-0.4.7-py3-none-any.whl", hash = "sha256:85505663cca67a83707be5fb3aeff0ea72e67846cea5985529d8eca4366564a1", size = 13210 },
 ]
 
 [[package]]
@@ -2292,20 +2290,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/63/70/2bf7780ad2d390a8d301ad0b550f1581eadbd9a20f896afe06353c2a2913/requests-2.32.3.tar.gz", hash = "sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760", size = 131218 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f9/9b/335f9764261e915ed497fcdeb11df5dfd6f7bf257d4a6a2a686d80da4d54/requests-2.32.3-py3-none-any.whl", hash = "sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6", size = 64928 },
-]
-
-[[package]]
-name = "responses"
-version = "0.24.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pyyaml" },
-    { name = "requests" },
-    { name = "urllib3" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/a0/c5/2f4f243e9b9ddb2fa70d696fb66daafd8fde20c9663a4a22c6a02d61bd97/responses-0.24.1.tar.gz", hash = "sha256:b127c6ca3f8df0eb9cc82fd93109a3007a86acb24871834c47b77765152ecf8c", size = 77530 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/3b/70/09ab7d1f559f045513cc5456d33a55a1896914bdcf6e8508070b679d20c5/responses-0.24.1-py3-none-any.whl", hash = "sha256:a2b43f4c08bfb9c9bd242568328c65a34b318741d3fab884ac843c5ceeb543f9", size = 55117 },
 ]
 
 [[package]]
