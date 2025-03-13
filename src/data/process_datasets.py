@@ -1,6 +1,11 @@
+import re
 from sklearn.model_selection import train_test_split
 
 from src.data.load_datasets import load_sentiment_from_hf
+
+def clean_input_text(text):
+    # Clean special characters from sentences
+    return [re.sub(r'[^\x00-\x7F]+', '', sentence) for sentence in text]
 
 def get_processed_hf_dataset(dataset, split_mode="train-valid-test", train_size=0.7, valid_size=0.15, test_size=0.15, random_state=42):
     """
@@ -22,20 +27,27 @@ def get_processed_hf_dataset(dataset, split_mode="train-valid-test", train_size=
                                                    train_labels, valid_labels, test_labels)
     """
     if dataset == "sentiment":
-        dataset = load_sentiment_from_hf()
+        hf_dataset = load_sentiment_from_hf()
+        
+        # Extract data from the Dataset object
+        sentences = list(hf_dataset["sentence"])
+        labels = list(hf_dataset["label"])
+        
+        # Clean the sentences
+        sentences = clean_input_text(sentences)
         
         if split_mode == "none":
-            return dataset["sentence"], dataset["label"]
+            return sentences, labels
         
         elif split_mode == "train-test":
             train_sentences, test_sentences, train_labels, test_labels = train_test_split(
-                dataset["sentence"], dataset["label"], test_size=test_size, random_state=random_state
+                sentences, labels, test_size=test_size, random_state=random_state
             )
             return train_sentences, test_sentences, train_labels, test_labels
         
         elif split_mode == "train-valid-test":
             train_valid_sentences, test_sentences, train_valid_labels, test_labels = train_test_split(
-                dataset["sentence"], dataset["label"], test_size=test_size, random_state=random_state
+                sentences, labels, test_size=test_size, random_state=random_state
             )
             
             valid_ratio = valid_size / (train_size + valid_size)
