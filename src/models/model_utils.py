@@ -65,12 +65,17 @@ def check_if_model_exists(model_name):
     """
     try:
         list = ollama.list()
+        if len(list.models) == 0:
+            print("No ollama models available yet. Pulling...")
+            pull_model_from_ollama(model_name)
+            return False
         for model in list:
             if model[1][0].model == model_name:
                 return True
             else:
                 print(f"Model {model_name} not found in Ollama. Attempting to pull model.")
                 pull_model_from_ollama(model_name)
+                return False
     except Exception as e:
         print(f"Failed to check if model {model_name} exists: {e}")
         return False

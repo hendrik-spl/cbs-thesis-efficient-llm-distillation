@@ -130,4 +130,8 @@ else
     echo_info "Ollama is already installed."
 fi
 
+# Starting ollama server
+echo_info "Starting Ollama server..."
+ollama serve &
+
 echo_info "Initialization complete."
