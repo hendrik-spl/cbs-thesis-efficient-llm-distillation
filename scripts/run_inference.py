@@ -10,9 +10,9 @@ from datetime import datetime
 from codecarbon import EmissionsTracker
 
 from src.data.process_datasets import get_processed_hf_dataset
-from src.models.model_utils import query_ollama, check_if_model_exists
+from src.models.ollama_utils import query_ollama, check_if_ollama_model_exists
 from src.prompts.sentiment import get_sentiment_prompt
-from src.utils.clean_outputs import clean_llm_output_to_int
+from src.models.model_utils import clean_llm_output_to_int
 from src.utils.setup import ensure_dir_exists, set_seed
 from src.evaluation.evaluate import evaluate_performance
 from src.evaluation.eval_utils import get_duration
@@ -62,7 +62,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
     emissions_output_dir = "results/metrics/emissions"
     ensure_dir_exists(emissions_output_dir)
 
-    check_if_model_exists(model_name)
+    check_if_ollama_model_exists(model_name)
 
     with EmissionsTracker(
         project_name="model-distillation",

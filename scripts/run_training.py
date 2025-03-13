@@ -9,7 +9,7 @@ from codecarbon import EmissionsTracker
 from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments
 
 from src.utils.setup import ensure_dir_exists, set_seed
-from src.models.model_utils import load_model_from_hf
+from src.models.hf_utils import load_model_from_hf
 from src.data.load_datasets import load_sentiment_dataset_from_json
 from src.evaluation.eval_utils import get_duration
 
