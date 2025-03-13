@@ -52,6 +52,9 @@ else
     echo_info "No GPU detected or driver missing."
 fi
 
+# Move one level up for proper execution of git pull
+cd ..
+
 # Install uv if not already installed
 if ! command -v uv > /dev/null 2>&1; then
     echo_info "Installing uv..."
@@ -115,6 +118,9 @@ export TF_DETERMINISTIC_OPS=1
 export TF_CUDNN_DETERMINISTIC=1
 export TF_ENABLE_ONEDNN_OPTS=0
 export CUBLAS_WORKSPACE_CONFIG=:16:8
+
+# Set tokenizers parallelism environment variable to avoid warnings
+export TOKENIZERS_PARALLELISM="false"
 
 # Install Ollama if not already installed
 if ! command -v ollama > /dev/null 2>&1; then

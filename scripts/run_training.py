@@ -2,9 +2,6 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Set tokenizers parallelism environment variable to avoid warnings
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
-
 import wandb
 import argparse
 from datetime import datetime
