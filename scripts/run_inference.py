@@ -67,7 +67,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
     with EmissionsTracker(
         project_name="model-distillation",
         experiment_id=wandb.run.name,
-        tracking_mode="process",
+        tracking_mode="machine",
         output_dir=emissions_output_dir,
         log_level="warning"
         ) as tracker:

@@ -64,7 +64,7 @@ def run_training(student_model: str, teacher_student: str, dataset: str, epochs:
     with EmissionsTracker(
         project_name="model-distillation",
         experiment_id=wandb_instance.run.name,
-        tracking_mode="process",
+        tracking_mode="machine",
         output_dir=emissions_output_dir,
         log_level="warning"
         ) as tracker:
