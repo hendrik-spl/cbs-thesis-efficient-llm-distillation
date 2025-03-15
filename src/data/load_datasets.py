@@ -3,7 +3,7 @@ from datasets import load_dataset
 from src.data.load_results import load_model_outputs_from_json
 from src.data.pt_classes import SentimentDataSet
 
-def load_sentiment_from_hf(version="sentences_50agree"):
+def load_sentiment_from_hf(version="50agree"):
     """
     Loads the financial phrasebank dataset for sentiment analysis from Hugging Face Datasets.
     Labels are integers from 0 to 2 where 0 is negative, 1 is neutral and 2 is positive.
@@ -14,7 +14,9 @@ def load_sentiment_from_hf(version="sentences_50agree"):
     Returns:
         datasets.Dataset: A Hugging Face Dataset object containing the training set of the financial phrasebank dataset for sentiment analysis.
     """
-    dataset = load_dataset(path="takala/financial_phrasebank", name=version, trust_remote_code=True)
+    name = f"sentences_{version}"
+    dataset = load_dataset(path="takala/financial_phrasebank", name=name, trust_remote_code=True)
+    print(f"Loaded dataset {name} with {len(dataset['train'])} training samples.")
 
     return dataset['train']
 

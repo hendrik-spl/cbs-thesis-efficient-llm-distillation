@@ -20,7 +20,7 @@ from src.evaluation.eval_utils import get_duration
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run inference with LLM models")
     parser.add_argument("--model_name", type=str, required=True, help="Name of the model to load (e.g., 'llama3.2:1b')")
-    parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment')")
+    parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment:50agree')")
     parser.add_argument("--limit", type=int, help="Limit the number of samples to process (default: 10)")
     parser.add_argument("--save_outputs", type=bool, default=True, help="Whether to save the outputs to a file")
     return parser.parse_args()
@@ -40,7 +40,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
     """
     print(f"Running inference with model {model_name} on dataset {dataset}.")
 
-    sentences, true_labels = get_processed_hf_dataset("sentiment", split_mode="none")
+    sentences, true_labels = get_processed_hf_dataset(dataset=dataset, split_mode="none")
 
     if limit: 
         print(f"Limiting to {limit} samples.")

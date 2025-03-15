@@ -12,7 +12,7 @@ def evaluate_performance(results_path, dataset, wandb):
     Returns:
         None
     """
-    if dataset == "sentiment":
+    if "sentiment" in dataset:
         measure_performance_sentiment(
             results_path=results_path,
             wandb=wandb

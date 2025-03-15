@@ -17,7 +17,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Run training with models")
     parser.add_argument("--student_model", type=str, required=True, help="Name of the model to load (e.g., 'google-t5:t5-small')")
     parser.add_argument("--teacher_model", type=str, required=True, help="Name of the teacher model to load (e.g., 'llama3.2:1b')")
-    parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment')")
+    parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment:50agree')")
     parser.add_argument("--epochs", type=int, default=20, help="Number of epochs to train the model (default: 50)")
     parser.add_argument("--batch_size", type=int, default=8, help="Training batch size (default: 8)")
     parser.add_argument("--learning_rate", type=float, default=5e-5, help="Learning rate (default: 5e-5)")
@@ -29,7 +29,7 @@ def run_training(student_model: str, teacher_student: str, dataset: str, epochs:
     print(f"Running training with model {student_model} on dataset {dataset} from {teacher_student} for {epochs} epochs.")
 
     model, tokenizer = load_model_from_hf(student_model, num_labels=3)
-    if dataset == "sentiment":
+    if "sentiment" in dataset:
         train_dataset, valid_dataset = load_sentiment_dataset_from_json(teacher_student, json_file_name, tokenizer)
 
     model_output_dir = f"models/{dataset}/student/{student_model}/checkpoints/{wandb_instance.run.name}_{timestamp}"

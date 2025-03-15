@@ -12,7 +12,7 @@ def get_processed_hf_dataset(dataset, split_mode="train-valid-test", train_size=
     Processes and splits the dataset into training, validation, and test sets.
 
     Args:
-        dataset: The dataset to split. Available options: "sentiment".
+        dataset: The dataset to split. Available options: "sentiment". Optionally, add version with a colon (e.g., "sentiment:50agree").
         split_mode: Splitting mode. Options: "none" (no split), "train-test" (two-way split), 
                    "train-valid-test" (three-way split). Default is "train-valid-test".
         train_size: The proportion of the dataset for training. Default is 0.7.
@@ -26,8 +26,9 @@ def get_processed_hf_dataset(dataset, split_mode="train-valid-test", train_size=
         If split_mode is "train-valid-test": Tuple (train_sentences, valid_sentences, test_sentences, 
                                                    train_labels, valid_labels, test_labels)
     """
-    if dataset == "sentiment":
-        hf_dataset = load_sentiment_from_hf()
+    if "sentiment" in dataset:
+        version = dataset.split(":")[-1] if ":" in dataset else "50agree"
+        hf_dataset = load_sentiment_from_hf(version)
         
         # Extract data from the Dataset object
         sentences = list(hf_dataset["sentence"])
