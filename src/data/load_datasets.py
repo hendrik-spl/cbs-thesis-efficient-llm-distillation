@@ -14,6 +14,9 @@ def load_sentiment_from_hf(version="50agree"):
     Returns:
         datasets.Dataset: A Hugging Face Dataset object containing the training set of the financial phrasebank dataset for sentiment analysis.
     """
+    if version not in ["50agree", "66agree", "75agree", "allagree"]:
+        raise ValueError(f"Invalid version {version}. Please choose from '50agree', '66agree', '75agree' or 'allagree'.")
+    
     name = f"sentences_{version}"
     dataset = load_dataset(path="takala/financial_phrasebank", name=name, trust_remote_code=True)
     print(f"Loaded dataset {name} with {len(dataset['train'])} training samples.")
