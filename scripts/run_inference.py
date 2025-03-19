@@ -13,7 +13,7 @@ from src.data.process_datasets import get_processed_hf_dataset
 from src.models.ollama_utils import query_ollama, check_if_ollama_model_exists
 from src.prompts.sentiment import get_sentiment_prompt
 from src.models.model_utils import clean_llm_output_to_int
-from src.utils.setup import ensure_dir_exists, set_seed
+from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbon
 from src.evaluation.evaluate import evaluate_performance
 from src.evaluation.eval_utils import get_duration
 
@@ -110,6 +110,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
 def main():
     set_seed(42)
     args = parse_arguments()
+    ensure_cpu_in_codecarbon()
 
     tags = [
         "test"
