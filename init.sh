@@ -175,6 +175,12 @@ else
     echo_info "Ollama is already installed."
 fi
 
+# Ensure Ollama cache directory exists
+mkdir -p .cache/ollama
+
+# Fix permissions for Ollama cache directory
+sudo chown -R ollama: ollama -cache/ollama
+
 # Check if Ollama is running before trying to start it
 echo_info "Checking Ollama status..."
 if lsof -i :11434 > /dev/null 2>&1 || nc -z localhost 11434 > /dev/null 2>&1; then
