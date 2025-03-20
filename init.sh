@@ -104,7 +104,10 @@ echo_info "Current directory: $(pwd)"
 # Quick fix: Use the copy mode to hide this warning:
 # warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance. 
 # If the cache and target directories are on different filesystems, hardlinking may not be supported.
-export UV_LINK_MODE=copy
+# export UV_LINK_MODE=copy
+
+# Set cache directory for uv
+export UV_CACHE_DIR=$(pwd)/.cache/uv
 
 # Check if .venv exists and remove if it's invalid
 if [ -d ".venv" ]; then
@@ -159,6 +162,9 @@ export CUBLAS_WORKSPACE_CONFIG=:16:8
 
 # Set tokenizers parallelism environment variable to avoid warnings
 export TOKENIZERS_PARALLELISM="false"
+
+# Set path where ollama models should be stored
+export OLLAMA_MODELS=$(pwd)/.cache/ollama
 
 # Install Ollama if not already installed
 if ! command -v ollama > /dev/null 2>&1; then
