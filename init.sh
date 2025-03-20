@@ -10,6 +10,10 @@ function echo_error {
     echo -e "\033[1;31m[ERROR]\033[0m $1"
 }
 
+function echo_success {
+    echo -e "\033[1;32m[SUCCESS]\033[0m $1"
+}
+
 # Detect Operating System
 OS="$(uname)"
 echo_info "Detected Operating System: $OS"
@@ -52,14 +56,26 @@ else
     echo_info "No GPU detected or driver missing."
 fi
 
-# Move one level up for proper execution of git pull
-cd ..
+# Get the script's directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+echo_info "Script directory: $SCRIPT_DIR"
+
+# Move to repository root for proper execution
+cd "$SCRIPT_DIR/.." || exit 1
+echo_info "Changed to directory: $(pwd)"
 
 # Install uv if not already installed
 if ! command -v uv > /dev/null 2>&1; then
     echo_info "Installing uv..."
     curl -LsSf https://astral.sh/uv/install.sh | sh
     export PATH="$HOME/.local/bin:$PATH"
+    # Verify uv installation
+    if command -v uv > /dev/null 2>&1; then
+        echo_success "uv installed successfully."
+    else
+        echo_error "uv installation failed. Please install manually and try again."
+        exit 1
+    fi
 else
     echo_info "uv is already installed."
 fi
@@ -71,24 +87,24 @@ REPO_URL="https://github.com/hendrik-spl/${REPO_DIR}.git"
 if [ ! -d "$REPO_DIR" ]; then
     echo_info "Cloning repository from GitHub..."
     git clone "$REPO_URL"
+    cd "$REPO_DIR" || exit 1
 else
     echo_info "Repository already cloned. Pulling latest changes..."
-    cd "$REPO_DIR"
+    cd "$REPO_DIR" || exit 1
     if [[ "$RUNNING_ON_CLOUD" == "true" ]]; then
         echo_info "Running on UCloud. Resetting head..."
         git reset --hard HEAD
-        git pull
     fi
+    git pull
 fi
+
+# Activate uv environment
+echo_info "Current directory: $(pwd)"
 
 # Quick fix: Use the copy mode to hide this warning:
 # warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance. 
 # If the cache and target directories are on different filesystems, hardlinking may not be supported.
 export UV_LINK_MODE=copy
-
-# Activate uv environment
-echo_info "Activating uv environment and installing dependencies..."
-echo_info "Current directory: $(pwd)"
 
 # Check if .venv exists and remove if it's invalid
 if [ -d ".venv" ]; then
@@ -98,7 +114,29 @@ if [ -d ".venv" ]; then
     fi
 fi
 
-uv venv .venv
+echo_info "Creating virtual environment with uv..."
+uv venv --python 3.11
+
+# Verify Python installation in the virtual environment
+if [[ "$OS" == "Darwin" || "$OS" == "Linux" ]]; then
+    if [ -f ".venv/bin/python" ]; then
+        echo_success "Virtual environment created successfully."
+        # Verify Python version
+        PYTHON_VERSION=$(.venv/bin/python --version)
+        echo_info "Python version: $PYTHON_VERSION"
+    else
+        echo_error "Failed to create virtual environment. Python interpreter not found."
+        exit 1
+    fi
+fi
+
+# Activate the virtual environment
+echo_info "Activating virtual environment..."
+source .venv/bin/activate
+
+# Install dependencies with uv sync
+echo_info "Installing dependencies with uv sync..."
+uv pip install --upgrade pip setuptools wheel
 uv sync
 
 # Source environment variables from .env file
@@ -126,12 +164,43 @@ export TOKENIZERS_PARALLELISM="false"
 if ! command -v ollama > /dev/null 2>&1; then
     echo_info "Installing Ollama..."
     curl -fsSL https://ollama.com/install.sh | sh
+    
+    # Verify Ollama installation
+    if command -v ollama > /dev/null 2>&1; then
+        echo_success "Ollama installed successfully."
+    else
+        echo_error "Ollama installation failed. Please install manually."
+    fi
 else
     echo_info "Ollama is already installed."
 fi
 
-# Starting ollama server
-echo_info "Starting Ollama server..."
-ollama serve &
+# Check if Ollama is running before trying to start it
+echo_info "Checking Ollama status..."
+if lsof -i :11434 > /dev/null 2>&1 || nc -z localhost 11434 > /dev/null 2>&1; then
+    echo_info "Ollama is already running."
+else
+    echo_info "Starting Ollama server..."
+    ollama serve &
+    # Wait a moment to ensure Ollama starts properly
+    sleep 2
+    # Check if it started successfully
+    if lsof -i :11434 > /dev/null 2>&1 || nc -z localhost 11434 > /dev/null 2>&1; then
+        echo_success "Ollama server started successfully."
+    else
+        echo_error "Failed to start Ollama server."
+    fi
+fi
+
+# # Create a file to help VS Code find the correct interpreter (macOS only)
+# if [[ "$OS" == "Darwin" ]]; then
+#     echo_info "Creating .vscode directory and settings.json for VS Code configuration..."
+#     mkdir -p .vscode
+#     echo '{' > .vscode/settings.json
+#     echo '    "python.defaultInterpreterPath": "'"${PWD}"'/.venv/bin/python",' >> .vscode/settings.json
+#     echo '    "python.analysis.extraPaths": ["'"${PWD}"'"],' >> .vscode/settings.json
+#     echo '    "python.terminal.activateEnvironment": true' >> .vscode/settings.json
+#     echo '}' >> .vscode/settings.json
+# fi
 
 echo_info "Initialization complete."
