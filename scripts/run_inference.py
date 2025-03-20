@@ -10,9 +10,8 @@ from datetime import datetime
 from codecarbon import EmissionsTracker
 
 from src.data.process_datasets import get_processed_hf_dataset
-from src.models.ollama_utils import query_ollama, check_if_ollama_model_exists
+from src.models.ollama_utils import query_ollama_sc, check_if_ollama_model_exists
 from src.prompts.sentiment import get_sentiment_prompt
-from src.models.model_utils import clean_llm_output_to_int
 from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbon
 from src.evaluation.evaluate import evaluate_performance
 from src.evaluation.eval_utils import get_duration
@@ -25,7 +24,7 @@ def parse_arguments():
     parser.add_argument("--save_outputs", type=bool, default=True, help="Whether to save the outputs to a file")
     return parser.parse_args()
 
-def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, wandb: wandb) -> str:
+def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, wandb: wandb, shots: int = 5) -> str:
     """
     Run inference with a given model on a dataset.
 
@@ -34,6 +33,8 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
         dataset (str): The name of the dataset to run inference on
         limit (int): The number of samples to process
         save_outputs (bool): Whether to save the outputs to a file
+        wandb (wandb): The Weights & Biases run object
+        shots (int): The number of shots to use for self-consistency
 
     Returns:
         None
@@ -73,7 +74,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
         ) as tracker:
         for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset}"):
             try:
-                response = query_ollama(model_name, prompt)
+                response = query_ollama_sc(model_name, prompt, shots)
                 if response is None:
                     print(f"Warning: Received None response from model for prompt: {prompt}")
                     pred_labels.append(None)
@@ -85,8 +86,6 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
     wandb.log({"inference_duration": get_duration(wandb.run.name)})
     wandb.log({"emissions": tracker.final_emissions})
     wandb.log({"energy_consumption": tracker._total_energy.kWh})
-
-    pred_labels = [clean_llm_output_to_int(text=label, extract_sentiment=True) for label in pred_labels]
 
     for i in range(len(sentences)):
         results['data'].append({

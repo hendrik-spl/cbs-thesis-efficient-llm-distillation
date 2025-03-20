@@ -1,55 +1,42 @@
 import re
+import random
+from collections import Counter
 
-def clean_llm_output_to_int(text, extract_sentiment=False):
+def find_majority(responses):
+    counter = Counter(responses)
+    majority = counter.most_common(1)[0]
+    if majority[1] > len(responses) / 2:
+        return majority[0]
+    else:
+        return random.choice(responses)
+
+def clean_llm_output_sentiment(text: str):
     """
-    Cleans the output of a language model to an integer and optionally extracts sentiment.
+    Cleans the output of a language model to an integer and extracts sentiment.
 
     Args:
         text (str): The text to clean.
-        extract_sentiment (bool): Whether to extract sentiment information.
 
     Returns:
-        int: If extract_sentiment is False, returns the extracted integer or -1 if none found.
-             If extract_sentiment is True:
-                - 2 for positive sentiment
-                - 1 for neutral sentiment
-                - 0 for negative sentiment
-                - -1 if no sentiment or multiple sentiments found
+        int: The cleaned integer value
     """
-    if text is None:
+    sentiment_options = ["negative", "neutral", "positive"] # integer labels: 0, 1, 2
+
+    if text is None or text == "":
         print("Received None text. Defaulting to -1.")
         return -1
+    
+    text = text.strip().lower()
+    
+    # look for exact matches
+    if text in sentiment_options:
+        return sentiment_options.index(text)
+    
+    words_found = []
+    
+    for word in sentiment_options:
+        words_found.extend([word] * len(re.findall(word, text)))
 
-    # Extract the integer from the text
-    match = re.search(r"\d+", text)
-
-    # If an integer was found, store it
-    if match:
-        int_value = int(match.group())
-    else:
-        int_value = -1
+    majority = find_majority(words_found)
     
-    # If not extracting sentiment, just return the int
-    if not extract_sentiment:
-        return int_value
-        
-    # Check for sentiment words - only extract if exactly one is found
-    sentiment_words = ["negative", "neutral", "positive"]
-    found_sentiments = []
-    
-    for sentiment in sentiment_words:
-        if re.search(r'\b' + sentiment + r'\b', text.lower()):
-            found_sentiments.append(sentiment)
-    
-    # If exactly one sentiment word is found, return corresponding integer
-    if len(found_sentiments) == 1:
-        sentiment = found_sentiments[0]
-        if sentiment == "positive":
-            return 2
-        elif sentiment == "neutral":
-            return 1
-        elif sentiment == "negative":
-            return 0
-    
-    # If no sentiment or multiple sentiments found
-    return -1
+    return sentiment_options.index(majority)

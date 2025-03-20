@@ -2,6 +2,25 @@ import time
 import ollama
 from ollama import chat, ChatResponse
 
+from src.models.model_utils import clean_llm_output_sentiment, find_majority
+
+def query_ollama_sc(model, prompt, shots=5):
+    """
+    Implement self-consistency on top of Ollama API.
+
+    Args:
+        model (str): The name of the model to use. For example, "llama3.2:1b".
+        prompt (str): The prompt to send to the model.
+        shots (int): The number of shots to use for self-consistency.
+    """
+    responses = []
+    for i in range(shots):
+        response = query_ollama(model, prompt)
+        responses.append(clean_llm_output_sentiment(response))
+    
+    majority_vote = find_majority(responses)
+    return majority_vote
+
 def query_ollama(model, prompt, temperature=0.1, seed=42, max_retries=3, retry_delay=5):
     """
     Sends a chat request to the Ollama API with the given model and prompt using the Ollama SDK.
