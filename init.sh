@@ -110,28 +110,22 @@ echo_info "Current directory: $(pwd)"
 export UV_CACHE_DIR=$(pwd)/.cache/uv
 
 # Check if .venv exists and remove if it's invalid
-if [ -d ".venv" ]; then
-    if [ ! -f ".venv/bin/python"]; then
-        echo_info "Found invalid .venv directory. Removing it..."
-        rm -rf .venv
-    fi
+if [ -d ".venv" ] && [ ! -f ".venv/bin/python" ]; then
+    echo_info "Found invalid .venv directory. Removing it..."
+    rm -rf .venv
 fi
 
+# Create and activate virtual environment
 echo_info "Creating virtual environment with uv..."
 uv venv --python 3.11
 
-# Verify Python installation in the virtual environment
-if [[ "$OS" == "Darwin" || "$OS" == "Linux" ]]; then
-    if [ -f ".venv/bin/python" ]; then
-        echo_success "Virtual environment created successfully."
-        # Verify Python version
-        PYTHON_VERSION=$(.venv/bin/python --version)
-        echo_info "Python version: $PYTHON_VERSION"
-    else
-        echo_error "Failed to create virtual environment. Python interpreter not found."
-        exit 1
-    fi
+# Verify virtual environment creation
+if [ ! -f ".venv/bin/python" ]; then
+    echo_error "Failed to create virtual environment. Python interpreter not found."
+    exit 1
 fi
+
+echo_success "Virtual environment created successfully."
 
 # Activate the virtual environment
 echo_info "Activating virtual environment..."
@@ -197,16 +191,5 @@ else
         echo_error "Failed to start Ollama server."
     fi
 fi
-
-# # Create a file to help VS Code find the correct interpreter (macOS only)
-# if [[ "$OS" == "Darwin" ]]; then
-#     echo_info "Creating .vscode directory and settings.json for VS Code configuration..."
-#     mkdir -p .vscode
-#     echo '{' > .vscode/settings.json
-#     echo '    "python.defaultInterpreterPath": "'"${PWD}"'/.venv/bin/python",' >> .vscode/settings.json
-#     echo '    "python.analysis.extraPaths": ["'"${PWD}"'"],' >> .vscode/settings.json
-#     echo '    "python.terminal.activateEnvironment": true' >> .vscode/settings.json
-#     echo '}' >> .vscode/settings.json
-# fi
 
 echo_info "Initialization complete."
