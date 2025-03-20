@@ -35,7 +35,7 @@ def measure_performance_sentiment(results_path, wandb: wandb):
 
     plt.figure(figsize=(6, 6))
     sns.heatmap(confusion, annot=True, fmt='g', cmap='Blues', cbar=False)
-    plt.title(wandb.run.name)
+    plt.title(wandb.name)
     plt.xticks(ticks=np.arange(len(class_names)) + 0.5, labels=class_names)
     plt.yticks(ticks=np.arange(len(class_names)) + 0.5, labels=class_names, rotation=0)
     plt.text(0.5, -0.11, f'Accuracy: {accuracy:.2f} | F1-Score: {f1:.2f}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=8)

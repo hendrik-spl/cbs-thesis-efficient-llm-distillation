@@ -92,7 +92,7 @@ def main():
         "learning_rate": args.learning_rate
     }
 
-    wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-training", tags=tags, config=config)
+    wandb_run = wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-training", tags=tags, config=config)
 
     run_training(
         student_model = args.student_model,
@@ -100,7 +100,7 @@ def main():
         dataset = args.dataset,
         epochs = args.epochs,
         json_file_name = args.json_file_name,
-        wandb_instance=wandb,
+        wandb_instance=wandb_run,
         learning_rate=args.learning_rate,
         batch_size=args.batch_size
         )

@@ -55,7 +55,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
     results = {}
     results['data'] = []
     results['config'] = {
-        'wandb_run_id': wandb.run.id,
+        'wandb_run_id': wandb.id,
         'model_name': model_name,
         'dataset': dataset,
         "timestamp" : datetime.now().strftime('%Y%m%d_%H%M%S'),
@@ -68,7 +68,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
 
     with EmissionsTracker(
         project_name="model-distillation",
-        experiment_id=wandb.run.name,
+        experiment_id=wandb.name,
         tracking_mode="machine",
         output_dir=emissions_output_dir,
         log_level="warning"
@@ -84,7 +84,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
             except Exception as e:
                 print(f"Error during inference: {e}")
 
-    print({"inference_duration": get_duration(wandb.run.name)})
+    print({"inference_duration": get_duration(wandb.name)})
     print({"emissions": tracker.final_emissions})
     print({"energy_consumption": tracker._total_energy.kWh})
 
