@@ -12,6 +12,7 @@ from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbo
 from src.models.hf_utils import load_model_from_hf
 from src.data.load_datasets import load_sentiment_dataset_from_json
 from src.evaluation.eval_utils import get_duration
+from src.utils.logs import log_training_to_wandb
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run training with models")
@@ -70,9 +71,7 @@ def run_training(student_model: str, teacher_student: str, dataset: str, epochs:
         ) as tracker:
         trainer.train()
 
-    wandb_instance.log({"training_duration": get_duration(wandb_instance.run.name)})
-    wandb_instance.log({"emissions": tracker.final_emissions})
-    wandb_instance.log({"energy_consumption": tracker._total_energy.kWh})
+    log_training_to_wandb(wandb_instance, tracker, epochs)
 
 def main():
     set_seed(42)

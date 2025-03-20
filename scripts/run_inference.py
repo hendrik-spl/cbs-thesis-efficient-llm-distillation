@@ -13,8 +13,8 @@ from src.data.process_datasets import get_processed_hf_dataset
 from src.models.ollama_utils import query_ollama_sc, check_if_ollama_model_exists
 from src.prompts.sentiment import get_sentiment_prompt
 from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbon
+from src.utils.logs import log_inference_to_wandb
 from src.evaluation.evaluate import evaluate_performance
-from src.evaluation.eval_utils import get_duration
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run inference with LLM models")
@@ -83,9 +83,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
             except Exception as e:
                 print(f"Error during inference: {e}")
 
-    wandb.log({"inference_duration": get_duration(wandb.run.name)})
-    wandb.log({"emissions": tracker.final_emissions})
-    wandb.log({"energy_consumption": tracker._total_energy.kWh})
+    log_inference_to_wandb(wandb, tracker, num_queries=len(prompts) * shots)
 
     for i in range(len(sentences)):
         results['data'].append({
@@ -120,17 +118,19 @@ def main():
         "dataset": args.dataset
     }
 
-    wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-inference", tags=tags, config=config)
+    custom_notes = ""
+
+    wandb_run = wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-inference-v2", tags=tags, config=config, notes=custom_notes)
 
     output_path = run_inference(
                     model_name=args.model_name, 
                     dataset=args.dataset,
                     limit=args.limit,
                     save_outputs=args.save_outputs,
-                    wandb=wandb)
+                    wandb=wandb_run)
     
     if output_path:
-        evaluate_performance(results_path=output_path, dataset=args.dataset, wandb=wandb)
+        evaluate_performance(results_path=output_path, dataset=args.dataset, wandb=wandb_run)
 
 if __name__ == "__main__":
     main()

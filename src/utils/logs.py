@@ -1,4 +1,23 @@
+import wandb
 import logging
+
+from src.evaluation.eval_utils import get_duration
+
+def log_inference_to_wandb(wandb: wandb, tracker, num_queries):
+    total_duration = get_duration(wandb.run.name)
+    # avg_query_duration = total_duration / num_queries
+    wandb.log({"num_queries": num_queries})
+    wandb.log({"inference_duration [s]": total_duration})
+    wandb.log({"energy_consumption [kWh]": tracker._total_energy.kWh})
+    wandb.log({"emissions [CO₂eq, kg]": tracker.final_emissions})
+
+def log_training_to_wandb(wandb: wandb, tracker, epochs):
+    total_duration = get_duration(wandb.run.name)
+    # avg_epoch_duration = total_duration / epochs
+    # wandb.log({"num_epochs": epochs})
+    wandb.log({"training_duration [s]": total_duration})
+    wandb.log({"energy_consumption [kWh]": tracker._total_energy.kWh})
+    wandb.log({"emissions [CO₂eq, kg]": tracker.final_emissions})
 
 def init_logging(log_level: str = 'INFO', log_target: str = "file", log_file: str = 'results/logs/logs.log'):
     """
