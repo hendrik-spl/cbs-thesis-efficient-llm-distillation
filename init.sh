@@ -111,7 +111,7 @@ export UV_CACHE_DIR=$(pwd)/.cache/uv
 
 # Check if .venv exists and remove if it's invalid
 if [ -d ".venv" ]; then
-    if [ ! -f ".venv/bin/python" ] && [ ! -f ".venv/Scripts/python.exe" ]; then
+    if [ ! -f ".venv/bin/python"]; then
         echo_info "Found invalid .venv directory. Removing it..."
         rm -rf .venv
     fi
