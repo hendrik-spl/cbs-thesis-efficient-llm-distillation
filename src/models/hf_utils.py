@@ -1,4 +1,4 @@
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoTokenizer, AutoModel
 
 def load_model_from_hf(model_name, num_labels):
     """
@@ -11,8 +11,12 @@ def load_model_from_hf(model_name, num_labels):
     Returns:
         tuple: A tuple containing the model and tokenizer.
     """
-    if ":" in model_name: # Handle model names with a slash in them for HF
-        model_name = model_name.replace(":", "/")
+    # if ":" in model_name: # Handle model names with a slash in them for HF
+    #     model_name = model_name.replace(":", "/")
+    if "llama3.2:1b" in model_name:
+        model_name = "meta-llama/Llama-3.2-1B"
+    else:
+        print(f"Model name {model_name} not recognized.")
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=num_labels)
+    model = AutoModel.from_pretrained(model_name, num_labels=num_labels)
     return model, tokenizer

@@ -7,6 +7,32 @@ def clean_input_text(text):
     # Clean special characters from sentences
     return [re.sub(r'[^\x00-\x7F]+', '', sentence) for sentence in text]
 
+def split_dataset(sentences, labels, split_mode="train-valid-test", train_size=0.7, valid_size=0.15, test_size=0.15, random_state=42):
+    if split_mode == "none":
+        return sentences, labels
+    
+    elif split_mode == "train-test":
+        train_sentences, test_sentences, train_labels, test_labels = train_test_split(
+            sentences, labels, test_size=test_size, random_state=random_state
+        )
+        return train_sentences, test_sentences, train_labels, test_labels
+    
+    elif split_mode == "train-valid-test":
+        train_valid_sentences, test_sentences, train_valid_labels, test_labels = train_test_split(
+            sentences, labels, test_size=test_size, random_state=random_state
+        )
+        
+        valid_ratio = valid_size / (train_size + valid_size)
+        
+        train_sentences, valid_sentences, train_labels, valid_labels = train_test_split(
+            train_valid_sentences, train_valid_labels, test_size=valid_ratio, random_state=random_state
+        )
+        
+        return train_sentences, valid_sentences, test_sentences, train_labels, valid_labels, test_labels
+    
+    else:
+        raise ValueError(f"Invalid split_mode: {split_mode}. Available options: 'none', 'train-test', 'train-valid-test'.")
+
 def get_processed_hf_dataset(dataset, split_mode="train-valid-test", train_size=0.7, valid_size=0.15, test_size=0.15, random_state=42):
     """
     Processes and splits the dataset into training, validation, and test sets.
@@ -37,29 +63,7 @@ def get_processed_hf_dataset(dataset, split_mode="train-valid-test", train_size=
         # Clean the sentences
         sentences = clean_input_text(sentences)
         
-        if split_mode == "none":
-            return sentences, labels
-        
-        elif split_mode == "train-test":
-            train_sentences, test_sentences, train_labels, test_labels = train_test_split(
-                sentences, labels, test_size=test_size, random_state=random_state
-            )
-            return train_sentences, test_sentences, train_labels, test_labels
-        
-        elif split_mode == "train-valid-test":
-            train_valid_sentences, test_sentences, train_valid_labels, test_labels = train_test_split(
-                sentences, labels, test_size=test_size, random_state=random_state
-            )
-            
-            valid_ratio = valid_size / (train_size + valid_size)
-            
-            train_sentences, valid_sentences, train_labels, valid_labels = train_test_split(
-                train_valid_sentences, train_valid_labels, test_size=valid_ratio, random_state=random_state
-            )
-            
-            return train_sentences, valid_sentences, test_sentences, train_labels, valid_labels, test_labels
-        
-        else:
-            raise ValueError(f"Invalid split_mode: {split_mode}. Available options: 'none', 'train-test', 'train-valid-test'.")
+        # Split the dataset
+        return split_dataset(sentences, labels, split_mode, train_size, valid_size, test_size, random_state)
     else:
         raise ValueError(f"Invalid dataset: {dataset}. Available options: 'sentiment'.")
