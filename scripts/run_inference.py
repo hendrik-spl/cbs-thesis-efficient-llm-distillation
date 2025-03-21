@@ -95,7 +95,7 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
         })
 
     if save_outputs:
-        inference_output_dir = f"models/{dataset}/teacher/{model_name}/inference_outputs"
+        inference_output_dir = f"models/{dataset}/{model_name}/inference_outputs"
         ensure_dir_exists(inference_output_dir)
         output_path = f"{inference_output_dir}/{wandb.name}.json"
         with open(output_path, "w") as f:

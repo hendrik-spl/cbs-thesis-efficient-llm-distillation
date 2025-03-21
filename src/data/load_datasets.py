@@ -1,3 +1,4 @@
+import os
 import torch
 from datasets import load_dataset
 from src.data.load_results import load_model_outputs_from_json
@@ -23,8 +24,12 @@ def load_sentiment_from_hf(version="50agree"):
 
     return dataset['train']
 
-def load_sentiment_dataset_from_json(model_name, file_name, tokenizer, split_size=0.8):
-    path = f"models/sentiment/teacher/{model_name}/inference_outputs/{file_name}"
+def load_sentiment_dataset_from_json(model_name, dataset, file_name, tokenizer, split_size=0.8):
+    path = f"models/{dataset}/{model_name}/inference_outputs/{file_name}"
+
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"File {path} not found")
+    
     dataset = load_model_outputs_from_json(path)
     sentences = [d['sentence'] for d in dataset['data']]
     labels = [d['pred_label'] for d in dataset['data']]
