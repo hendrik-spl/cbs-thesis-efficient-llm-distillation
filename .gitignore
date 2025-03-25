@@ -174,3 +174,6 @@ inspiration/
 
 # any files within a checkpoint folder
 checkpoints/
+
+# any elements in the data folder
+data/
