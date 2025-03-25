@@ -1,8 +1,5 @@
 import os
-import torch
 from datasets import load_dataset
-from src.data.load_results import load_model_outputs_from_json
-from src.data.pt_classes import SentimentDataSet
 
 def load_sentiment_from_hf(version="50agree"):
     """
@@ -24,16 +21,15 @@ def load_sentiment_from_hf(version="50agree"):
 
     return dataset['train']
 
-def load_sentiment_dataset_from_json(model_name, dataset, file_name, tokenizer, split_size=0.8):
+def load_sentiment_dataset_from_json(model_name, dataset, file_name, test_size=0.2):
     path = f"models/{dataset}/{model_name}/inference_outputs/{file_name}"
-
     if not os.path.exists(path):
         raise FileNotFoundError(f"File {path} not found")
     
-    dataset = load_model_outputs_from_json(path)
-    sentences = [d['sentence'] for d in dataset['data']]
-    labels = [d['pred_label'] for d in dataset['data']]
-    train_size = int(split_size * len(sentences))
-    valid_size = len(sentences) - train_size
-    train_dataset, valid_dataset = torch.utils.data.random_split(SentimentDataSet(sentences, labels, tokenizer, 128), [train_size, valid_size])
-    return train_dataset, valid_dataset
+    dataset = load_dataset("json", data_files=path, field="data")
+    if "pred_label" in dataset["train"][0]:
+        dataset = dataset.rename_column("pred_label", "completion")
+    dataset = dataset.remove_columns(["id", "sentence", "true_label"])
+    dataset = dataset['train'].train_test_split(test_size, seed=42)
+
+    return dataset
