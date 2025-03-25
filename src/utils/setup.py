@@ -5,6 +5,7 @@ import keras
 import random
 import platform
 import numpy as np
+import transformers
 import tensorflow as tf
 
 def get_root_dir() -> str:
@@ -47,6 +48,7 @@ def set_seed(seed: int = 42) -> None:
     torch.cuda.manual_seed_all(seed)
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
+    transformers.set_seed(seed)
     return seed
 
 def setup_gpu() -> None:
