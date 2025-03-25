@@ -19,12 +19,23 @@ def measure_performance_sentiment(results_path, wandb_run: wandb):
     """
     results = load_model_outputs_from_json(results_path)
 
-    # Define the ordering of classes in reverse (Positive first)
-    classes = [2, 1, 0]  # Positive, Neutral, Negative
-    class_names = ['Positive', 'Neutral', 'Negative']
+    mapping = {
+        "negative": 0,
+        "neutral": 1,
+        "positive": 2
+    }
 
+    # Extract the true and predicted labels
     true_labels = [results['data'][i]['true_label'] for i in range(len(results['data']))]
     pred_labels = [results['data'][i]['pred_label'] for i in range(len(results['data']))]
+
+    # Transform labels from strings to integers
+    true_labels = [mapping[label] for label in true_labels]
+    pred_labels = [mapping[label] for label in pred_labels]
+
+    # Define the ordering of classes in reverse (Positive first for plot!)
+    classes = [2, 1, 0]  # Positive, Neutral, Negative
+    class_names = ['Positive', 'Neutral', 'Negative']
     
     accuracy = accuracy_score(true_labels, pred_labels)
     f1 = f1_score(true_labels, pred_labels, average='weighted')

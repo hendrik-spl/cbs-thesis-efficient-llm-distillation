@@ -1,4 +1,5 @@
 import re
+from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 
 from src.data.load_datasets import load_sentiment_from_hf
@@ -62,6 +63,14 @@ def get_processed_hf_dataset(dataset, split_mode="train-valid-test", train_size=
         
         # Clean the sentences
         sentences = clean_input_text(sentences)
+
+        # Map numeric labels to text labels
+        label_mapping = {
+            0: "negative",
+            1: "neutral",
+            2: "positive"
+        }
+        labels = [label_mapping[label] for label in labels]
         
         # Split the dataset
         return split_dataset(sentences, labels, split_mode, train_size, valid_size, test_size, random_state)
