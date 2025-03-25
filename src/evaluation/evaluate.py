@@ -15,7 +15,7 @@ def evaluate_performance(results_path, dataset, wandb):
     if "sentiment" in dataset:
         measure_performance_sentiment(
             results_path=results_path,
-            wandb=wandb
+            wandb_run=wandb
         )
     else:
         print("Invalid dataset.")
