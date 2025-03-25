@@ -2,11 +2,9 @@ import re
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 
-from src.data.load_datasets import load_sentiment_from_hf
-
-def clean_input_text(text):
+def clean_input_text(sentence):
     # Clean special characters from sentences
-    return [re.sub(r'[^\x00-\x7F]+', '', sentence) for sentence in text]
+    return re.sub(r'[^\x00-\x7F]+', '', sentence)
 
 def split_dataset(sentences, labels, split_mode="train-valid-test", train_size=0.7, valid_size=0.15, test_size=0.15, random_state=42):
     if split_mode == "none":
@@ -34,45 +32,45 @@ def split_dataset(sentences, labels, split_mode="train-valid-test", train_size=0
     else:
         raise ValueError(f"Invalid split_mode: {split_mode}. Available options: 'none', 'train-test', 'train-valid-test'.")
 
-def get_processed_hf_dataset(dataset, split_mode="train-valid-test", train_size=0.7, valid_size=0.15, test_size=0.15, random_state=42):
-    """
-    Processes and splits the dataset into training, validation, and test sets.
+# def get_processed_hf_dataset(dataset, split_mode="train-valid-test", train_size=0.7, valid_size=0.15, test_size=0.15, random_state=42):
+#     """
+#     Processes and splits the dataset into training, validation, and test sets.
 
-    Args:
-        dataset: The dataset to split. Available options: "sentiment". Optionally, add version with a colon (e.g., "sentiment:50agree").
-        split_mode: Splitting mode. Options: "none" (no split), "train-test" (two-way split), 
-                   "train-valid-test" (three-way split). Default is "train-valid-test".
-        train_size: The proportion of the dataset for training. Default is 0.7.
-        valid_size: The proportion of the dataset for validation. Default is 0.15.
-        test_size: The proportion of the dataset for testing. Default is 0.15.
-        random_state: Controls the shuffling applied to the data before applying the split. Default is 42.
+#     Args:
+#         dataset: The dataset to split. Available options: "sentiment". Optionally, add version with a colon (e.g., "sentiment:50agree").
+#         split_mode: Splitting mode. Options: "none" (no split), "train-test" (two-way split), 
+#                    "train-valid-test" (three-way split). Default is "train-valid-test".
+#         train_size: The proportion of the dataset for training. Default is 0.7.
+#         valid_size: The proportion of the dataset for validation. Default is 0.15.
+#         test_size: The proportion of the dataset for testing. Default is 0.15.
+#         random_state: Controls the shuffling applied to the data before applying the split. Default is 42.
 
-    Returns:
-        If split_mode is "none": Tuple (sentences, labels)
-        If split_mode is "train-test": Tuple (train_sentences, test_sentences, train_labels, test_labels)
-        If split_mode is "train-valid-test": Tuple (train_sentences, valid_sentences, test_sentences, 
-                                                   train_labels, valid_labels, test_labels)
-    """
-    if "sentiment" in dataset:
-        version = dataset.split(":")[-1] if ":" in dataset else "50agree"
-        hf_dataset = load_sentiment_from_hf(version)
+#     Returns:
+#         If split_mode is "none": Tuple (sentences, labels)
+#         If split_mode is "train-test": Tuple (train_sentences, test_sentences, train_labels, test_labels)
+#         If split_mode is "train-valid-test": Tuple (train_sentences, valid_sentences, test_sentences, 
+#                                                    train_labels, valid_labels, test_labels)
+#     """
+#     if "sentiment" in dataset:
+#         version = dataset.split(":")[-1] if ":" in dataset else "50agree"
+#         # hf_dataset = load_sentiment_from_hf(version)
         
-        # Extract data from the Dataset object
-        sentences = list(hf_dataset["sentence"])
-        labels = list(hf_dataset["label"])
+#         # Extract data from the Dataset object
+#         sentences = list(hf_dataset["sentence"])
+#         labels = list(hf_dataset["label"])
         
-        # Clean the sentences
-        sentences = clean_input_text(sentences)
+#         # Clean the sentences
+#         sentences = clean_input_text(sentences)
 
-        # Map numeric labels to text labels
-        label_mapping = {
-            0: "negative",
-            1: "neutral",
-            2: "positive"
-        }
-        labels = [label_mapping[label] for label in labels]
+#         # Map numeric labels to text labels
+#         label_mapping = {
+#             0: "negative",
+#             1: "neutral",
+#             2: "positive"
+#         }
+#         labels = [label_mapping[label] for label in labels]
         
-        # Split the dataset
-        return split_dataset(sentences, labels, split_mode, train_size, valid_size, test_size, random_state)
-    else:
-        raise ValueError(f"Invalid dataset: {dataset}. Available options: 'sentiment'.")
+#         # Split the dataset
+#         return split_dataset(sentences, labels, split_mode, train_size, valid_size, test_size, random_state)
+#     else:
+#         raise ValueError(f"Invalid dataset: {dataset}. Available options: 'sentiment'.")
