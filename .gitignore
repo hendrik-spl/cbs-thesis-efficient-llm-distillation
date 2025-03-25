@@ -175,5 +175,6 @@ inspiration/
 # any files within a checkpoint folder
 checkpoints/
 
-# any elements in the data folder
-data/
+# Ignore data folder at root level but not src/data
+/data/
+!src/data/
