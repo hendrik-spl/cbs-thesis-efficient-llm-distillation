@@ -29,9 +29,18 @@ def ensure_dir_exists(directory: str) -> None:
 
     Args:
         directory (str): The directory to ensure exists.
+    
+    Returns:
+        str: The directory path that was created or already existed.
     """
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    try:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+            print(f"Created directory {directory}.")
+        return directory
+    except OSError as e:
+        print(f"Error creating directory {directory}: {e}")
+        return None
 
 def set_seed(seed: int = 42) -> None:
     """
