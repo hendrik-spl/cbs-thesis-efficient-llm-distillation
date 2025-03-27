@@ -178,3 +178,6 @@ checkpoints/
 # Ignore data folder at root level but not src/data
 /data/
 !src/data/
+
+# arrow files
+*.arrow
