@@ -2,74 +2,49 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-import json
 import wandb
 import argparse
 from tqdm import tqdm
-from datetime import datetime
 from codecarbon import EmissionsTracker
 
-from src.data.process_datasets import get_processed_hf_dataset
 from src.models.ollama_utils import query_ollama_sc, check_if_ollama_model_exists
-from src.prompts.sentiment import get_sentiment_prompt
 from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbon
 from src.utils.logs import log_inference_to_wandb
 from src.evaluation.evaluate import evaluate_performance
+from src.data.data_manager import SentimentDataManager
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run inference with LLM models")
     parser.add_argument("--model_name", type=str, required=True, help="Name of the model to load (e.g., 'llama3.2:1b')")
     parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment:50agree')")
     parser.add_argument("--limit", type=int, help="Limit the number of samples to process (default: 10)")
-    parser.add_argument("--save_outputs", type=bool, default=True, help="Whether to save the outputs to a file")
+    parser.add_argument("--run_on_test", type=bool, default=False, help="Whether to run on the test set. If False, runs on the training set.")
     return parser.parse_args()
 
-def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, wandb: wandb, shots: int = 5) -> str:
+def run_inference(model_name: str, dataset: str, wandb: wandb, run_on_test: bool = False, limit: int = None, shots: int = 5) -> str:
     """
     Run inference with a given model on a dataset.
 
     Args:
-        model_name (str): The name of the model to load
-        dataset (str): The name of the dataset to run inference on
-        limit (int): The number of samples to process
-        save_outputs (bool): Whether to save the outputs to a file
-        wandb (wandb): The Weights & Biases run object
-        shots (int): The number of shots to use for self-consistency
+        model_name: The name of the model to run inference with.
+        dataset: The name of the dataset to run inference on.
+        wandb: The wandb run to log metrics to.
+        run_on_test: Whether to run on the test set. If False, runs on the training set.
+        limit: The number of samples to process.
+        shots: The number of samples to generate per prompt.
 
     Returns:
         None
     """
     print(f"Running inference with model {model_name} on dataset {dataset}.")
 
-    sentences, true_labels = get_processed_hf_dataset(dataset=dataset, split_mode="none")
-
-    if limit: 
-        print(f"Limiting to {limit} samples.")
-        sentences = sentences[:limit]
-        true_labels = true_labels[:limit]
-
-    prompts = [get_sentiment_prompt(sentences[i]) for i in range(len(sentences))]
-    
-    pred_labels = []
-    results = {}
-    results['data'] = []
-    results['config'] = {
-        'wandb_run_id': wandb.id,
-        'model_name': model_name,
-        'dataset': dataset,
-        "timestamp" : datetime.now().strftime('%Y%m%d_%H%M%S'),
-    }
-
-    emissions_output_dir = "results/metrics/emissions"
-    ensure_dir_exists(emissions_output_dir)
-
-    check_if_ollama_model_exists(model_name)
+    prompts, true_labels, pred_labels = SentimentDataManager.load_data(run_on_test=run_on_test, limit=limit)
 
     with EmissionsTracker(
         project_name="model-distillation",
         experiment_id=wandb.name,
         tracking_mode="machine",
-        output_dir=emissions_output_dir,
+        output_dir=ensure_dir_exists("results/metrics/emissions"),
         log_level="warning"
         ) as tracker:
         for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset}"):
@@ -85,29 +60,13 @@ def run_inference(model_name: str, dataset: str, limit: int, save_outputs: str, 
 
     log_inference_to_wandb(wandb, tracker, num_queries=len(prompts) * shots)
 
-    for i in range(len(sentences)):
-        results['data'].append({
-            "id" : i,
-            "sentence" : sentences[i],
-            "prompt" : prompts[i],
-            "true_label" : true_labels[i],
-            "pred_label" : pred_labels[i]
-        })
-
-    if save_outputs:
-        inference_output_dir = f"models/{dataset}/{model_name}/inference_outputs"
-        ensure_dir_exists(inference_output_dir)
-        output_path = f"{inference_output_dir}/{wandb.name}.json"
-        with open(output_path, "w") as f:
-            json.dump(results, f, indent=2)
-        return output_path
-    
-    return None # No output path if not saving
+    SentimentDataManager.save_model_outputs(prompts, true_labels, pred_labels, dataset, model_name, wandb.name)
 
 def main():
     set_seed(42)
     args = parse_arguments()
-    ensure_cpu_in_codecarbon()
+    ensure_cpu_in_codecarbon()    
+    check_if_ollama_model_exists(args.model_name)
 
     tags = [
         "test"
@@ -122,15 +81,15 @@ def main():
 
     wandb_run = wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-inference-v2", tags=tags, config=config, notes=custom_notes)
 
-    output_path = run_inference(
-                    model_name=args.model_name, 
-                    dataset=args.dataset,
-                    limit=args.limit,
-                    save_outputs=args.save_outputs,
-                    wandb=wandb_run)
+    run_inference(
+        model_name=args.model_name, 
+        dataset=args.dataset,
+        limit=args.limit,
+        run_on_test=args.run_on_test,
+        wandb=wandb_run,
+        )
     
-    if output_path:
-        evaluate_performance(results_path=output_path, dataset=args.dataset, wandb=wandb_run)
+    evaluate_performance(args=args, wandb=wandb_run)
 
 if __name__ == "__main__":
     main()
