@@ -2,22 +2,21 @@ import wandb
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from datasets import load_from_disk
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 
-from src.data.load_results import load_model_outputs_from_json
-
-def measure_performance_sentiment(results_path, wandb_run: wandb):
+def measure_performance_sentiment(args, wandb_run: wandb):
     """
     Load the results of a sentiment analysis model and display the confusion matrix.
 
     Args:
-        results_path (str): The path to the results file to load
+        args: The arguments to use for evaluation
         wandb_run: The Weights & Biases object
         
     Returns:
         None
     """
-    results = load_model_outputs_from_json(results_path)
+    results = load_from_disk(f"models/{args.dataset}/{args.model_name}/inference_outputs/{wandb_run.name}")
 
     mapping = {
         "negative": 0,
@@ -26,12 +25,12 @@ def measure_performance_sentiment(results_path, wandb_run: wandb):
     }
 
     # Extract the true and predicted labels
-    true_labels = [results['data'][i]['true_label'] for i in range(len(results['data']))]
-    pred_labels = [results['data'][i]['pred_label'] for i in range(len(results['data']))]
+    true_labels = [results[i]['true_label'] for i in range(len(results))]
+    pred_labels = [results[i]['completion'] for i in range(len(results))]
 
-    # Transform labels from strings to integers
-    true_labels = [mapping[label] for label in true_labels]
-    pred_labels = [mapping[label] for label in pred_labels]
+    # Transform labels from strings to integers. Predicted labels are already integers.
+    true_labels = [mapping[label] if isinstance(label, str) else label for label in true_labels]
+    pred_labels = [mapping[label] if isinstance(label, str) else label for label in pred_labels]
 
     # Define the ordering of classes in reverse (Positive first for plot!)
     classes = [2, 1, 0]  # Positive, Neutral, Negative

@@ -1,20 +1,19 @@
 from src.evaluation.evaluate_performance import measure_performance_sentiment
 
-def evaluate_performance(results_path, dataset, wandb):
+def evaluate_performance(args, wandb):
     """
     Evaluate the performance of a model on a dataset.
 
     Args:
-        results_path (str): The path to the results file
-        dataset (str): The name of the dataset to evaluate the model on
+        args: The arguments to use for evaluation
         wandb: The Weights & Biases object
 
     Returns:
         None
     """
-    if "sentiment" in dataset:
+    if "sentiment" in args.dataset:
         measure_performance_sentiment(
-            results_path=results_path,
+            args=args,
             wandb_run=wandb
         )
     else:
