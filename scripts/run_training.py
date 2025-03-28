@@ -47,7 +47,10 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         save_total_limit=1,
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
-        seed=42
+        seed=42,
+        packing=True,
+        gradient_checkpointing=True,
+        use_cache=False
     )
 
     trainer = SFTTrainer(
