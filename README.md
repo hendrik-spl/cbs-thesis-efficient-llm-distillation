@@ -46,4 +46,5 @@ Welcome to the repository for our Master’s thesis project, which explores **su
 2. **Run Training**
     ```python3
     uv run scripts/run_training.py --student_model google-t5:t5-small --teacher_model llama3.2:1b --dataset sentiment --json_file_name smooth-surf-5.json
+    uv run scripts/run_training.py --student_model llama3.2:1b --teacher_model llama3.3:70b --dataset sentiment:50agree --inference_title noble-sun-21
     ```
