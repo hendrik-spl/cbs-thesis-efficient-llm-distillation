@@ -12,18 +12,18 @@ def load_model_from_hf(model_name: str, peft: bool):
     Returns:
         tuple: A tuple containing the model and tokenizer.
     """
-    if "llama3.1:8b" in model_name:
-        model_name = "meta-llama/Llama-3.1-8B-Instruct"
-    elif "llama3.1:405b" in model_name:
-        model_name = "meta-llama/Llama-3.1-405B-Instruct"
-    elif "llama3.2:1b" in model_name:
-        model_name = "meta-llama/Llama-3.2-1B-Instruct"
-    elif "llama3.2:3b" in model_name:
-        model_name = "meta-llama/Llama-3.2-3B-Instruct"
-    elif "llama3.3:70b" in model_name:
-        model_name = "meta-llama/Llama-3.3-70B-Instruct"
+    model_hf_mapping = {
+        "llama3.1:8b": "meta-llama/Llama-3.1-8B-Instruct",
+        "llama3.1:405b": "meta-llama/Llama-3.1-405B-Instruct",
+        "llama3.2:1b": "meta-llama/Llama-3.2-1B-Instruct",
+        "llama3.2:3b": "meta-llama/Llama-3.2-3B-Instruct",
+        "llama3.3:70b": "meta-llama/Llama-3.3-70B-Instruct",
+        "smollm2:135m": "HuggingFaceTB/SmolLM2-135M-Instruct",
+    }
+    if model_name in model_hf_mapping:
+        model_name = model_hf_mapping[model_name]
     else:
-        print(f"Model name {model_name} not recognized.")
+        raise ValueError(f"Model name {model_name} not recognized. Predefined models are: {model_hf_mapping.keys()}")
     model = AutoModelForCausalLM.from_pretrained(model_name)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 

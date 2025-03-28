@@ -63,12 +63,11 @@ class DataTransforms:
     @staticmethod
     def split_data(data: Dataset, test_size=0.2, seed=42):
         """
-        Split the dataset into train, validation, and test sets.
+        Split the dataset into train, and test sets.
         
         Args:
             data: The processed dataset to split.
             test_size: Proportion of data to reserve for validation and test.
-            val_test_ratio: How to split the test_size portion between validation and test.
             seed: Random seed for reproducibility.
             
         Returns:
