@@ -19,7 +19,7 @@ def parse_arguments():
     parser.add_argument("--teacher_model", type=str, required=True, help="Name of the teacher model to load (e.g., 'llama3.2:1b')")
     parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment:50agree')")
     parser.add_argument("--inference_title", type=str, required=True, help="Title of the inference file to load")
-    parser.add_argument("--epochs", type=int, default=20, help="Number of epochs to train the model (default: 50)")
+    parser.add_argument("--epochs", type=int, default=3, help="Number of epochs to train the model (default: 50)")
     parser.add_argument("--batch_size", type=int, default=8, help="Training batch size (default: 8)")
     parser.add_argument("--learning_rate", type=float, default=5e-5, help="Learning rate (default: 5e-5)")
     return parser.parse_args()
