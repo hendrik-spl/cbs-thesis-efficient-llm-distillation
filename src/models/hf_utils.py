@@ -10,7 +10,9 @@ def load_model_from_hf(model_name: str, peft: bool):
         model_name (str): The name of the model to load.
 
     Returns:
-        tuple: A tuple containing the model and tokenizer.
+        model (PreTrainedModel): The model loaded from the model hub.
+        tokenizer (PreTrainedTokenizer): The tokenizer loaded from the model hub.
+        peft_config (Optional[LoraConfig]): The PEFT configuration for the model, if it exists.
     """
     model_hf_mapping = {
         "llama3.1:8b": "meta-llama/Llama-3.1-8B-Instruct",
@@ -43,4 +45,4 @@ def load_model_from_hf(model_name: str, peft: bool):
         print(f"Loaded model {model_name} with PEFT configuration.")
         return model, tokenizer, peft_config
     
-    return model, tokenizer
+    return model, tokenizer, None
