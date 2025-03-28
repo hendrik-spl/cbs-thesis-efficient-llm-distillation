@@ -21,7 +21,7 @@ def parse_arguments():
     parser.add_argument("--run_on_test", type=bool, default=False, help="Whether to run on the test set. If False, runs on the training set.")
     return parser.parse_args()
 
-def run_inference(model_name: str, dataset: str, wandb: wandb, run_on_test: bool = False, limit: int = None, shots: int = 5) -> str:
+def run_inference(model_name: str, dataset: str, wandb_run: wandb, run_on_test: bool = False, limit: int = None, shots: int = 5) -> str:
     """
     Run inference with a given model on a dataset.
 
@@ -42,7 +42,7 @@ def run_inference(model_name: str, dataset: str, wandb: wandb, run_on_test: bool
 
     with EmissionsTracker(
         project_name="model-distillation",
-        experiment_id=wandb.name,
+        experiment_id=wandb_run.name,
         tracking_mode="machine",
         output_dir=ensure_dir_exists("results/metrics/emissions"),
         log_level="warning"
@@ -58,9 +58,9 @@ def run_inference(model_name: str, dataset: str, wandb: wandb, run_on_test: bool
             except Exception as e:
                 print(f"Error during inference: {e}")
 
-    log_inference_to_wandb(wandb, tracker, num_queries=len(prompts) * shots)
+    log_inference_to_wandb(wandb_run, tracker, num_queries=len(prompts) * shots)
 
-    SentimentDataManager.save_model_outputs(prompts, true_labels, pred_labels, dataset, model_name, wandb.name)
+    SentimentDataManager.save_model_outputs(prompts, true_labels, pred_labels, dataset, model_name, wandb_run.name)
 
 def main():
     set_seed(42)
@@ -86,7 +86,7 @@ def main():
         dataset=args.dataset,
         limit=args.limit,
         run_on_test=args.run_on_test,
-        wandb=wandb_run,
+        wandb_run=wandb_run,
         )
     
     evaluate_performance(args=args, wandb=wandb_run)
