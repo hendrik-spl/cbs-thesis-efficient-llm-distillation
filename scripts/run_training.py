@@ -31,6 +31,11 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
     dataset = load_from_disk(f"models/{dataset_name}/{teacher_model}/inference_outputs/{inference_title}")
     dataset = DataTransforms.split_data(dataset)
 
+    # Count the number per class in the dataset
+    from collections import Counter
+    print(f"Train dataset split: {Counter(dataset['train']['true_label'])}")
+    print(f"Test dataset split: {Counter(dataset['test']['true_label'])}")
+
     model_output_dir = ensure_dir_exists(f"models/{dataset_name}/{student_model}/checkpoints/{wandb_run.name}")
     emissions_output_dir = ensure_dir_exists(f"results/metrics/emissions")
 
@@ -38,20 +43,36 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         output_dir=model_output_dir,
         run_name=f"{student_model}_{dataset_name}_{wandb_run.name}",
         report_to='wandb',
+
+        # Training schedule
         num_train_epochs=epochs, # Number of epochs to train
         learning_rate=learning_rate, # Learning rate
+        lr_scheduler_type="cosine", # learning rate scheduler
+        warmup_ratio=0.05, # warmup ratio for the learning rate scheduler      
+
+        # Batch handling
         per_device_train_batch_size=batch_size, # Training batch size
         per_device_eval_batch_size=batch_size, # Evaluation batch size
-        eval_strategy="steps", # means evaluate every step
+        gradient_accumulation_steps=8, # effective batch size = batch_size * gradient_accumulation_steps
+
+        # Evaluation and saving
+        eval_strategy="steps", # means evaluate by steps
+        eval_steps=100, # evaluate every 100 steps
         save_strategy="best", # saves the best model
         save_total_limit=1, # saves only the best model
         load_best_model_at_end=True, # loads the best model at the end
         metric_for_best_model="eval_loss", # metric to use to compare models
+        greater_is_better=False, # lower is better for loss
+
+        # Regularization
+        weight_decay=0.01, # add l2 regularization to the model
+        max_grad_norm=0.5, # max gradient norm for clipping
+        
+        # Performance
         seed=42,
         packing=True, # pack the inputs for efficiency
-        gradient_checkpointing=True, # use gradient checkpointing to save memory
         use_cache=False, # disable the cache to save memory
-        weight_decay=0.001, # add l2 regularization to the model
+        gradient_checkpointing=True, # use gradient checkpointing to save memory
     )
 
     trainer = SFTTrainer(
