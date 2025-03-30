@@ -42,6 +42,17 @@ def load_model_from_hf(model_name: str, peft: bool):
             lora_dropout=0,
             modules_to_save=["lm_head", "embed_token"],
         )
+    #     Example from https://www.kaggle.com/code/gpreda/fine-tune-llama3-with-qlora-for-sentiment-analysis
+    #     peft_config = LoraConfig(
+    #     lora_alpha=16,
+    #     lora_dropout=0,
+    #     r=64,
+    #     bias="none",
+    #     task_type="CAUSAL_LM",
+    #     target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
+    #                     "gate_proj", "up_proj", "down_proj",],
+    # )
+    
         print(f"Loaded model {model_name} with PEFT configuration.")
         return model, tokenizer, peft_config
     

@@ -38,19 +38,20 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         output_dir=model_output_dir,
         run_name=f"{student_model}_{dataset_name}_{wandb_run.name}",
         report_to='wandb',
-        num_train_epochs=epochs,
-        learning_rate=learning_rate,
-        per_device_train_batch_size=batch_size,
-        per_device_eval_batch_size=batch_size,
-        eval_strategy="epoch",
-        save_strategy="best",
-        save_total_limit=1,
-        load_best_model_at_end=True,
-        metric_for_best_model="eval_loss",
+        num_train_epochs=epochs, # Number of epochs to train
+        learning_rate=learning_rate, # Learning rate
+        per_device_train_batch_size=batch_size, # Training batch size
+        per_device_eval_batch_size=batch_size, # Evaluation batch size
+        eval_strategy="steps", # means evaluate every step
+        save_strategy="best", # saves the best model
+        save_total_limit=1, # saves only the best model
+        load_best_model_at_end=True, # loads the best model at the end
+        metric_for_best_model="eval_loss", # metric to use to compare models
         seed=42,
-        packing=True,
-        gradient_checkpointing=True,
-        use_cache=False
+        packing=True, # pack the inputs for efficiency
+        gradient_checkpointing=True, # use gradient checkpointing to save memory
+        use_cache=False, # disable the cache to save memory
+        weight_decay=0.001, # add l2 regularization to the model
     )
 
     trainer = SFTTrainer(
