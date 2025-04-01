@@ -69,9 +69,19 @@ def load_model_from_hf(model_name: str, peft: bool):
     model = AutoModelForCausalLM.from_pretrained(model_name)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-    if tokenizer.pad_token is None: # Set the pad token to the eos token if it doesn't exist
+    if tokenizer.pad_token is None:
+        print(f"Tokenizer {tokenizer.name_or_path} does not have a pad token. Setting pad token to eos token.")
         tokenizer.pad_token = tokenizer.eos_token
-        model.config.pad_token_id = model.config.eos_token_id
+        
+        # Make sure we're setting a single integer ID
+        if isinstance(model.config.eos_token_id, list):
+            # If eos_token_id is a list, use the first element
+            model.config.pad_token_id = model.config.eos_token_id[0]
+        else:
+            model.config.pad_token_id = model.config.eos_token_id
+            
+        print(f"tokenizer.pad_token: {tokenizer.pad_token}")
+        print(f"model.config.pad_token_id: {model.config.pad_token_id}")
 
     if peft:
         peft_config = LoraConfig(
