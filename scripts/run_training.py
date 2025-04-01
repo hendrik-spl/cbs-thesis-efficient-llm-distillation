@@ -73,7 +73,6 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         
         # Performance
         max_seq_length=256, 
-        optimizer="adamw_torch",
         seed=42,
         packing=True, # pack the inputs for efficiency
         gradient_checkpointing=True, # use gradient checkpointing to save memory
