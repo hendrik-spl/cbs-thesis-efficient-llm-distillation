@@ -1,6 +1,49 @@
+import torch
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+from src.models.model_utils import clean_llm_output_sentiment, find_majority
+
+def query_hf_model_sc(model_path, prompt, shots=5):
+    """
+    Implement self-consistency on top of Hugging Face model.
+    Args:
+        model_path (str): The path to the model.
+        prompt (str): The prompt to send to the model.
+        shots (int): The number of shots to use for self-consistency.
+    """
+    responses = []
+    for i in range(shots):
+        response = query_hf_model(model_path, prompt)
+        responses.append(clean_llm_output_sentiment(response))
+
+    majority_vote = find_majority(responses)
+    return majority_vote
+
+def query_hf_model(model_path, prompt):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    # Load the model and tokenizer
+    model = AutoModelForCausalLM.from_pretrained(model_path).to(device)
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
+
+    # Tokenize the input prompt
+    inputs = tokenizer(prompt, return_tensors="pt").to(device)
+
+    # Store the input length to know where the generated text starts
+    input_length = inputs.input_ids.shape[1]
+
+    # Generate a response
+    with torch.no_grad():
+        outputs = model.generate(**inputs,
+                                 pad_token_id=tokenizer.eos_token_id,
+                                 max_new_tokens=50
+                                 )
+
+    # Decode ONLY the generated tokens (exclude the input prompt tokens)
+    response = tokenizer.decode(outputs[0][input_length:], skip_special_tokens=True)
+    
+    return response
 
 def load_model_from_hf(model_name: str, peft: bool):
     """

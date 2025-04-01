@@ -7,7 +7,8 @@ import argparse
 from tqdm import tqdm
 from codecarbon import EmissionsTracker
 
-from src.models.ollama_utils import query_ollama_sc, check_if_ollama_model_exists
+from src.models.ollama_utils import query_ollama_sc, check_if_ollama_model_exists, use_ollama
+from src.models.hf_utils import query_hf_model_sc
 from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbon
 from src.utils.logs import log_inference_to_wandb
 from src.evaluation.evaluate import evaluate_performance
@@ -36,7 +37,7 @@ def run_inference(model_name: str, dataset: str, wandb_run: wandb, run_on_test: 
     Returns:
         None
     """
-    print(f"Running inference with model {model_name} on dataset {dataset}.")
+    print(f"Running inference with model {model_name} on dataset {dataset}. Limit: {limit}. Run on test: {run_on_test}. Shots: {shots}.")
 
     prompts, true_labels, pred_labels = SentimentDataManager.load_data(run_on_test=run_on_test, limit=limit)
 
@@ -49,7 +50,10 @@ def run_inference(model_name: str, dataset: str, wandb_run: wandb, run_on_test: 
         ) as tracker:
         for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset}"):
             try:
-                response = query_ollama_sc(model_name, prompt, shots)
+                if use_ollama(model_name):
+                    response = query_ollama_sc(model_name, prompt, shots)
+                else:
+                    response = query_hf_model_sc(model_name, prompt, shots)
                 if response is None:
                     print(f"Warning: Received None response from model for prompt: {prompt}")
                     pred_labels.append(None)

@@ -1,3 +1,4 @@
+import os
 import time
 import ollama
 from ollama import chat, ChatResponse
@@ -53,6 +54,21 @@ def query_ollama(model, prompt, temperature=0.1, seed=42, max_retries=3, retry_d
                 print("Failed to get response from Ollama after multiple attempts.")
                 return None
             time.sleep(retry_delay)
+
+def use_ollama(model_name: str) -> bool:
+    """
+    Check if the model is an Ollama model.
+
+    Args:
+        model_name: The name of the model to check.
+
+    Returns:
+        bool: True if the model is an Ollama model, False otherwise.
+    """
+    if os.path.exists(model_name):
+        return False
+    else:
+        return True
 
 def check_if_ollama_model_exists(model_name):
     """
