@@ -76,7 +76,6 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         seed=42,
         packing=True, # pack the inputs for efficiency
         gradient_checkpointing=True, # use gradient checkpointing to save memory
-        mixed_precision="fp16", # use mixed precision to save memory
     )
 
     trainer = SFTTrainer(
