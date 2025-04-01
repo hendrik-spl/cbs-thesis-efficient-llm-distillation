@@ -3,7 +3,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from datasets import load_from_disk
-from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, balanced_accuracy_score
 
 def measure_performance_sentiment(args, wandb_run: wandb):
     """
@@ -37,18 +37,20 @@ def measure_performance_sentiment(args, wandb_run: wandb):
     class_names = ['Positive', 'Neutral', 'Negative']
     
     accuracy = accuracy_score(true_labels, pred_labels)
-    f1 = f1_score(true_labels, pred_labels, average='weighted')
+    balanced_accuracy = balanced_accuracy_score(true_labels, pred_labels)
+    f1_micro = f1_score(true_labels, pred_labels, average='micro')
     confusion = confusion_matrix(true_labels, pred_labels, labels=classes)
     
     wandb_run.log({"accuracy": accuracy})
-    wandb_run.log({"f1": f1})
+    wandb_run.log({"f1_micro": f1_micro})
+    wandb_run.log({"balanced_accuracy": balanced_accuracy})
 
     plt.figure(figsize=(6, 6))
     sns.heatmap(confusion, annot=True, fmt='g', cmap='Blues', cbar=False)
     plt.title(wandb_run.name)
     plt.xticks(ticks=np.arange(len(class_names)) + 0.5, labels=class_names)
     plt.yticks(ticks=np.arange(len(class_names)) + 0.5, labels=class_names, rotation=0)
-    plt.text(0.5, -0.11, f'Accuracy: {accuracy:.2f} | F1-Score: {f1:.2f}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=8)
+    plt.text(0.5, -0.11, f'Balanced Accuracy: {balanced_accuracy:.2f} | F1 micro: {f1_micro:.2f}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=8)
     plt.xlabel('Predicted labels')
     plt.ylabel('True labels')
     
