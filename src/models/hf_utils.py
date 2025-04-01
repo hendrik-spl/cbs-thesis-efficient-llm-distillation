@@ -4,7 +4,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from src.models.model_utils import clean_llm_output_sentiment, find_majority
 
-def query_hf_model_sc(model_path, prompt, shots=5):
+def query_hf_model_sc(model, tokenizer, prompt, shots=5):
     """
     Implement self-consistency on top of Hugging Face model.
     Args:
@@ -14,18 +14,15 @@ def query_hf_model_sc(model_path, prompt, shots=5):
     """
     responses = []
     for i in range(shots):
-        response = query_hf_model(model_path, prompt)
+        response = query_hf_model(model, tokenizer, prompt)
         responses.append(clean_llm_output_sentiment(response))
 
     majority_vote = find_majority(responses)
     return majority_vote
 
-def query_hf_model(model_path, prompt):
+def query_hf_model(model, tokenizer, prompt):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-
-    # Load the model and tokenizer
-    model = AutoModelForCausalLM.from_pretrained(model_path).to(device)
-    tokenizer = AutoTokenizer.from_pretrained(model_path)
+    model.to(device)
 
     # Tokenize the input prompt
     inputs = tokenizer(prompt, return_tensors="pt").to(device)

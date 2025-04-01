@@ -14,6 +14,8 @@ from src.utils.logs import log_inference_to_wandb
 from src.evaluation.evaluate import evaluate_performance
 from src.data.data_manager import SentimentDataManager
 
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run inference with LLM models")
     parser.add_argument("--model_name", type=str, required=True, help="Name of the model to load (e.g., 'llama3.2:1b')")
@@ -41,6 +43,10 @@ def run_inference(model_name: str, dataset: str, wandb_run: wandb, run_on_test: 
 
     prompts, true_labels, pred_labels = SentimentDataManager.load_data(run_on_test=run_on_test, limit=limit)
 
+    if not use_ollama(model_name):
+        hf_model = AutoModelForCausalLM.from_pretrained(model_name)
+        hf_tokenizer = AutoTokenizer.from_pretrained(model_name)
+
     with EmissionsTracker(
         project_name="model-distillation",
         experiment_id=wandb_run.name,
@@ -53,7 +59,7 @@ def run_inference(model_name: str, dataset: str, wandb_run: wandb, run_on_test: 
                 if use_ollama(model_name):
                     response = query_ollama_sc(model_name, prompt, shots)
                 else:
-                    response = query_hf_model_sc(model_name, prompt, shots)
+                    response = query_hf_model_sc(hf_model, hf_tokenizer, prompt, shots)
                 if response is None:
                     print(f"Warning: Received None response from model for prompt: {prompt}")
                     pred_labels.append(None)
