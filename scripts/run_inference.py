@@ -7,10 +7,10 @@ import argparse
 from tqdm import tqdm
 from codecarbon import EmissionsTracker
 
-from src.models.ollama_utils import query_ollama_sc, check_if_ollama_model_exists, use_ollama
-from src.models.hf_utils import query_hf_model_sc
+from src.models.ollama_utils import check_if_ollama_model_exists, use_ollama
 from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbon
 from src.utils.logs import log_inference_to_wandb
+from src.models.model_utils import query_with_sc
 from src.evaluation.evaluate import evaluate_performance
 from src.data.data_manager import SentimentDataManager
 
@@ -43,9 +43,13 @@ def run_inference(model_name: str, dataset: str, wandb_run: wandb, run_on_test: 
 
     prompts, true_labels, pred_labels = SentimentDataManager.load_data(run_on_test=run_on_test, limit=limit)
 
-    if not use_ollama(model_name):
+    if use_ollama(model_name):
+        check_if_ollama_model_exists(model_name)
+        model_config = model_name
+    else:
         hf_model = AutoModelForCausalLM.from_pretrained(model_name)
         hf_tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model_config = (hf_model, hf_tokenizer)
 
     with EmissionsTracker(
         project_name="model-distillation",
@@ -56,15 +60,12 @@ def run_inference(model_name: str, dataset: str, wandb_run: wandb, run_on_test: 
         ) as tracker:
         for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset}"):
             try:
-                if use_ollama(model_name):
-                    response = query_ollama_sc(model_name, prompt, shots)
-                else:
-                    response = query_hf_model_sc(hf_model, hf_tokenizer, prompt, shots)
-                if response is None:
-                    print(f"Warning: Received None response from model for prompt: {prompt}")
-                    pred_labels.append(None)
-                else:
-                    pred_labels.append(response)
+                pred_labels.append(query_with_sc(
+                    model=model_config,
+                    prompt=prompt,
+                    shots=shots,
+                    use_ollama=use_ollama(model_name)
+                ))
             except Exception as e:
                 print(f"Error during inference: {e}")
 
@@ -76,7 +77,6 @@ def main():
     set_seed(42)
     args = parse_arguments()
     ensure_cpu_in_codecarbon()    
-    check_if_ollama_model_exists(args.model_name)
 
     tags = [
         "test"
@@ -84,7 +84,9 @@ def main():
 
     config = {
         "model_name": args.model_name,
-        "dataset": args.dataset
+        "dataset": args.dataset,
+        "limit": args.limit,
+        "run_on_test": args.run_on_test,
     }
 
     custom_notes = ""

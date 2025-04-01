@@ -1,44 +1,41 @@
 import torch
-from peft import LoraConfig, TaskType, get_peft_model
+from peft import LoraConfig, TaskType
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from src.models.hf_stopping import KeywordStoppingCriteria
+from transformers.generation.stopping_criteria import StoppingCriteriaList
 
-from src.models.model_utils import clean_llm_output_sentiment, find_majority
+def query_hf_model(model_config, prompt, params):
+    model = model_config[0]
+    tokenizer = model_config[1]
 
-def query_hf_model_sc(model, tokenizer, prompt, shots=5):
-    """
-    Implement self-consistency on top of Hugging Face model.
-    Args:
-        model_path (str): The path to the model.
-        prompt (str): The prompt to send to the model.
-        shots (int): The number of shots to use for self-consistency.
-    """
-    responses = []
-    for i in range(shots):
-        response = query_hf_model(model, tokenizer, prompt)
-        responses.append(clean_llm_output_sentiment(response))
-
-    majority_vote = find_majority(responses)
-    return majority_vote
-
-def query_hf_model(model, tokenizer, prompt):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
 
     # Tokenize the input prompt
     inputs = tokenizer(prompt, return_tensors="pt").to(device)
+    prompt_length = inputs.input_ids.shape[1]
 
-    # Store the input length to know where the generated text starts
-    input_length = inputs.input_ids.shape[1]
+    # Create stopping criteria - stop on seeing these keywords or patterns
+    stop_words = ["text:"]
+    stopping_criteria = StoppingCriteriaList([
+        KeywordStoppingCriteria(tokenizer, stop_words, prompt_length)
+    ])
+    print(f"Implemented stopping criteria: {stopping_criteria}")
 
     # Generate a response
     with torch.no_grad():
         outputs = model.generate(**inputs,
+                                 do_sample=params.get("do_sample"),
+                                 temperature=params.get("temperature"),
+                                 top_p=params.get("top_p"),
+                                 top_k=params.get("top_k"),
+                                 max_new_tokens=params.get("max_new_tokens"),
                                  pad_token_id=tokenizer.eos_token_id,
-                                 max_new_tokens=50
+                                 stopping_criteria=stopping_criteria,
                                  )
 
     # Decode ONLY the generated tokens (exclude the input prompt tokens)
-    response = tokenizer.decode(outputs[0][input_length:], skip_special_tokens=True)
+    response = tokenizer.decode(outputs[0][prompt_length:], skip_special_tokens=True)
     
     return response
 
@@ -79,7 +76,6 @@ def load_model_from_hf(model_name: str, peft: bool):
             model.config.pad_token_id = model.config.eos_token_id[0]
         else:
             model.config.pad_token_id = model.config.eos_token_id
-            
         print(f"tokenizer.pad_token: {tokenizer.pad_token}")
         print(f"model.config.pad_token_id: {model.config.pad_token_id}")
 
