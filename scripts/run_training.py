@@ -6,6 +6,7 @@ import wandb
 import argparse
 from codecarbon import EmissionsTracker
 from trl import SFTConfig, SFTTrainer
+from transformers import EarlyStoppingCallback
 
 from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbon
 from src.models.hf_utils import load_model_from_hf
@@ -39,6 +40,8 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
     model_output_dir = ensure_dir_exists(f"models/{dataset_name}/{student_model}/checkpoints/{wandb_run.name}")
     emissions_output_dir = ensure_dir_exists(f"results/metrics/emissions")
 
+    early_stopping = EarlyStoppingCallback(early_stopping_patience=3)
+
     training_args = SFTConfig(
         output_dir=model_output_dir,
         run_name=f"{student_model}_{dataset_name}_{wandb_run.name}",
@@ -56,8 +59,8 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         gradient_accumulation_steps=8, # effective batch size = batch_size * gradient_accumulation_steps
 
         # Evaluation and saving
-        eval_strategy="steps", # means evaluate by steps
-        eval_steps=100, # evaluate every 100 steps
+        eval_strategy="epoch", # means evaluate by steps
+        logging_strategy="epoch", # means log by steps
         save_strategy="best", # saves the best model
         save_total_limit=1, # saves only the best model
         load_best_model_at_end=True, # loads the best model at the end
@@ -69,9 +72,10 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         max_grad_norm=0.5, # max gradient norm for clipping
         
         # Performance
+        max_seq_length=256, 
+        optimizer="adamw_torch",
         seed=42,
         packing=True, # pack the inputs for efficiency
-        use_cache=False, # disable the cache to save memory
         gradient_checkpointing=True, # use gradient checkpointing to save memory
     )
 
@@ -81,7 +85,8 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         train_dataset=dataset['train'],
         eval_dataset=dataset['test'],
         tokenizer=tokenizer,
-        peft_config=peft_config if peft_config else None
+        peft_config=peft_config if peft_config else None,
+        callbacks=[early_stopping],
     )
 
     with EmissionsTracker(
@@ -96,6 +101,7 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
     log_training_to_wandb(wandb_run, tracker, epochs)
 
     trainer.save_model(model_output_dir)
+    tokenizer.save_pretrained(model_output_dir)
 
 def main():
     set_seed(42)
