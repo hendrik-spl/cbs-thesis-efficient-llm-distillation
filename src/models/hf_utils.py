@@ -20,7 +20,6 @@ def query_hf_model(model_config, prompt, params):
     stopping_criteria = StoppingCriteriaList([
         KeywordStoppingCriteria(tokenizer, stop_words, prompt_length)
     ])
-    print(f"Implemented stopping criteria: {stopping_criteria}")
 
     # Generate a response
     with torch.no_grad():

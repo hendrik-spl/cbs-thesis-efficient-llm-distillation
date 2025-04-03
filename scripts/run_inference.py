@@ -55,7 +55,7 @@ def run_inference(model_name: str, dataset: str, wandb_run: wandb, run_on_test: 
                     model=model_config,
                     prompt=prompt,
                     shots=shots,
-                    use_ollama=use_ollama(model_name)
+                    use_ollama=use_ollama
                 ))
             except Exception as e:
                 print(f"Error during inference: {e}")

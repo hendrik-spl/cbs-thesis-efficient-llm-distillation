@@ -23,10 +23,10 @@ def query_with_sc(model, prompt, shots, use_ollama):
     responses = []
     for i in range(shots):
         response = query_func(model_config=model, prompt=prompt, params=query_params)
-        print(f"Response {i+1}:")
-        print(f"Reponse: {response}")
-        print(f"Cleaned response: {clean_llm_output_sentiment(response)}")
-        print(f"------------")
+        # print(f"Response {i+1}:")
+        # print(f"Reponse: {response}")
+        # print(f"Cleaned response: {clean_llm_output_sentiment(response)}")
+        # print(f"------------")
         responses.append(clean_llm_output_sentiment(response))
 
     majority_vote = find_majority(responses)
