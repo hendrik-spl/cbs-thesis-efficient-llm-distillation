@@ -66,17 +66,36 @@ def load_model_from_hf(model_name: str, peft: bool):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     if tokenizer.pad_token is None:
-        print(f"Tokenizer {tokenizer.name_or_path} does not have a pad token. Setting pad token to eos token.")
-        tokenizer.pad_token = tokenizer.eos_token
+        print(f"Tokenizer {tokenizer.name_or_path} does not have a pad token. Setting a unique pad token.")
+
+        # Add a new special token as pad_token
+        special_tokens_dict = {'pad_token': '[PAD]'}
+        num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
+        print(f"Added {num_added_toks} special tokens to the tokenizer")
         
-        # Make sure we're setting a single integer ID
-        if isinstance(model.config.eos_token_id, list):
-            # If eos_token_id is a list, use the first element
-            model.config.pad_token_id = model.config.eos_token_id[0]
-        else:
-            model.config.pad_token_id = model.config.eos_token_id
+        # Resize the model's token embeddings to account for the new pad token
+        model.resize_token_embeddings(len(tokenizer))
+
+        # Set the pad_token_id to the ID of the new pad token
+        model.config.pad_token_id = tokenizer.pad_token_id
+
         print(f"tokenizer.pad_token: {tokenizer.pad_token}")
         print(f"model.config.pad_token_id: {model.config.pad_token_id}")
+        print(f"model.config.eos_token_id: {model.config.eos_token_id}")
+
+    # Previous implementation
+    # if tokenizer.pad_token is None:
+    #     print(f"Tokenizer {tokenizer.name_or_path} does not have a pad token. Setting pad token to eos token.")
+    #     tokenizer.pad_token = tokenizer.eos_token
+        
+    #     # Make sure we're setting a single integer ID
+    #     if isinstance(model.config.eos_token_id, list):
+    #         # If eos_token_id is a list, use the first element
+    #         model.config.pad_token_id = model.config.eos_token_id[0]
+    #     else:
+    #         model.config.pad_token_id = model.config.eos_token_id
+    #     print(f"tokenizer.pad_token: {tokenizer.pad_token}")
+    #     print(f"model.config.pad_token_id: {model.config.pad_token_id}")
 
     if peft:
         peft_config = LoraConfig(
