@@ -37,7 +37,7 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
 
     early_stopping = EarlyStoppingCallback(early_stopping_patience=3, early_stopping_threshold=0.01)
 
-    data_collator = DataCollatorForCompletionOnlyLM(response_template="Final Label", tokenizer=tokenizer)
+    data_collator = DataCollatorForCompletionOnlyLM(response_template="Final Label:", tokenizer=tokenizer)
 
     training_args = SFTConfig(
         output_dir=model_output_dir,
@@ -81,7 +81,6 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         train_dataset=dataset['train'],
         eval_dataset=dataset['test'],
         tokenizer=tokenizer,
-        peft_config=peft_config if peft_config else None,
         callbacks=[early_stopping],
         data_collator=data_collator,
     )
