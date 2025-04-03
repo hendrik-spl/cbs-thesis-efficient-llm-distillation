@@ -22,7 +22,7 @@ def parse_arguments():
     parser.add_argument("--inference_title", type=str, required=True, help="Title of the inference file to load")
     parser.add_argument("--epochs", type=int, default=3, help="Number of epochs to train the model (default: 50)")
     parser.add_argument("--batch_size", type=int, default=8, help="Training batch size (default: 8)")
-    parser.add_argument("--learning_rate", type=float, default=5e-5, help="Learning rate (default: 5e-5)")
+    parser.add_argument("--learning_rate", type=float, default=2e-5, help="Learning rate (default: 2e-5)")
     return parser.parse_args()
 
 def run_training(student_model: str, teacher_model: str, dataset_name: str, epochs: int, inference_title: str, wandb_run: wandb, learning_rate: float, batch_size: int):
@@ -51,7 +51,7 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         # Batch handling
         per_device_train_batch_size=batch_size, # Training batch size
         per_device_eval_batch_size=batch_size, # Evaluation batch size
-        gradient_accumulation_steps=1, # effective batch size = batch_size * gradient_accumulation_steps
+        gradient_accumulation_steps=8, # effective batch size = batch_size * gradient_accumulation_steps
 
         # Evaluation and saving
         eval_strategy="epoch", # means evaluate by steps
@@ -63,13 +63,13 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         greater_is_better=False, # lower is better for loss
 
         # Regularization
-        weight_decay=0.01, # add l2 regularization to the model
-        max_grad_norm=0.5, # max gradient norm for clipping
+        weight_decay=0.1, # add l2 regularization to the model
+        max_grad_norm=0.3, # max gradient norm for clipping
         
         # Performance
         max_seq_length=256, 
         seed=42,
-        packing=True, # pack the inputs for efficiency
+        packing=False, # pack the inputs for efficiency
         gradient_checkpointing=True, # use gradient checkpointing to save memory
     )
 
