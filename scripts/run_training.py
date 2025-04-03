@@ -32,15 +32,10 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
     dataset = load_from_disk(f"models/{dataset_name}/{teacher_model}/inference_outputs/{inference_title}")
     dataset = DataTransforms.split_data(dataset)
 
-    # Count the number per class in the dataset
-    from collections import Counter
-    print(f"Train dataset split: {Counter(dataset['train']['true_label'])}")
-    print(f"Test dataset split: {Counter(dataset['test']['true_label'])}")
-
     model_output_dir = ensure_dir_exists(f"models/{dataset_name}/{student_model}/checkpoints/{wandb_run.name}")
     emissions_output_dir = ensure_dir_exists(f"results/metrics/emissions")
 
-    early_stopping = EarlyStoppingCallback(early_stopping_patience=3)
+    early_stopping = EarlyStoppingCallback(early_stopping_patience=3, early_stopping_threshold=0.01)
 
     training_args = SFTConfig(
         output_dir=model_output_dir,
