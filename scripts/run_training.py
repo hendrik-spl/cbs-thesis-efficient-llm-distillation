@@ -37,7 +37,7 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
 
     early_stopping = EarlyStoppingCallback(early_stopping_patience=3, early_stopping_threshold=0.01)
 
-    data_collator = DataCollatorForCompletionOnlyLM(response_template="Final Label: ", tokenizer=tokenizer)
+    data_collator = DataCollatorForCompletionOnlyLM(response_template="Final Label:", tokenizer=tokenizer)
 
     training_args = SFTConfig(
         output_dir=model_output_dir,
@@ -69,7 +69,7 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         max_grad_norm=0.3, # max gradient norm for clipping
         
         # Performance
-        max_seq_length=256, 
+        max_seq_length=384, # set based on analysis of the dataset 
         seed=42,
         packing=False, # pack the inputs for efficiency
         gradient_checkpointing=True, # use gradient checkpointing to save memory
