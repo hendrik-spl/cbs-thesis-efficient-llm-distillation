@@ -1,8 +1,9 @@
 import re
 import random
 from collections import Counter
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from src.models.ollama_utils import query_ollama_model
+from src.models.ollama_utils import check_if_ollama_model_exists, use_ollama, query_ollama_model
 from src.models.hf_utils import query_hf_model
 
 def query_with_sc(model, prompt, shots, use_ollama):
@@ -72,3 +73,12 @@ def clean_llm_output_sentiment(text: str):
     majority = find_majority(words_found)
     
     return majority
+
+def get_model_config(model_name: str):
+    if use_ollama(model_name):
+        check_if_ollama_model_exists(model_name)
+        return model_name, True
+    else:
+        hf_model = AutoModelForCausalLM.from_pretrained(model_name)
+        hf_tokenizer = AutoTokenizer.from_pretrained(model_name)
+        return (hf_model, hf_tokenizer), False

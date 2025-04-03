@@ -7,14 +7,11 @@ import argparse
 from tqdm import tqdm
 from codecarbon import EmissionsTracker
 
-from src.models.ollama_utils import check_if_ollama_model_exists, use_ollama
 from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbon
 from src.utils.logs import log_inference_to_wandb
-from src.models.model_utils import query_with_sc
+from src.models.model_utils import query_with_sc, get_model_config
 from src.evaluation.evaluate import evaluate_performance
 from src.data.data_manager import SentimentDataManager
-
-from transformers import AutoModelForCausalLM, AutoTokenizer
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run inference with LLM models")
@@ -43,13 +40,7 @@ def run_inference(model_name: str, dataset: str, wandb_run: wandb, run_on_test: 
 
     prompts, true_labels, pred_labels = SentimentDataManager.load_data(run_on_test=run_on_test, limit=limit)
 
-    if use_ollama(model_name):
-        check_if_ollama_model_exists(model_name)
-        model_config = model_name
-    else:
-        hf_model = AutoModelForCausalLM.from_pretrained(model_name)
-        hf_tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model_config = (hf_model, hf_tokenizer)
+    model_config, use_ollama = get_model_config(model_name)
 
     with EmissionsTracker(
         project_name="model-distillation",
