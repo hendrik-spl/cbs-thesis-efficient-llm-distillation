@@ -5,8 +5,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import wandb
 import argparse
 from codecarbon import EmissionsTracker
-from trl import SFTConfig, SFTTrainer
-from transformers import EarlyStoppingCallback, DataCollatorForLanguageModeling
+from trl import SFTConfig, SFTTrainer, DataCollatorForCompletionOnlyLM
+from transformers import EarlyStoppingCallback
 
 from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbon
 from src.models.hf_utils import load_model_from_hf
@@ -37,7 +37,7 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
 
     early_stopping = EarlyStoppingCallback(early_stopping_patience=3, early_stopping_threshold=0.01)
 
-    data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
+    data_collator = DataCollatorForCompletionOnlyLM(response_template="Final Label: ", tokenizer=tokenizer)
 
     training_args = SFTConfig(
         output_dir=model_output_dir,
