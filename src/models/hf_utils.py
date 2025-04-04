@@ -103,7 +103,7 @@ def load_model_from_hf(model_name: str, peft: bool):
             r=64,
             lora_alpha=64,
             lora_dropout=0.1,
-            modules_to_save=["lm_head", "embed_token"],
+            modules_to_save=["lm_head", "embed_tokens"],
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
                             "gate_proj", "up_proj", "down_proj",],
         )
