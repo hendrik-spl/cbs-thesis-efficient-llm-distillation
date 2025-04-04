@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from src.data.data_manager import SentimentDataManager 
 from src.data.data_transforms import DataTransforms
 
-def load_sentiment_from_hf(version="50agree"):
+def load_sentiment_from_hf(version="allagree"):
     """
     Loads the financial phrasebank dataset for sentiment analysis, processes it,
     splits it into train/val/test, and saves it to disk.
@@ -24,7 +24,7 @@ def load_sentiment_from_hf(version="50agree"):
     data = DataTransforms.split_data(data)
     
     # Step 4: Save data
-    DataTransforms.save_data(data, dataset_path="data/sentiment")
+    DataTransforms.save_data(data, dataset_path=f"data/sentiment:{version}")
 
 if __name__ == "__main__":
     load_sentiment_from_hf()
