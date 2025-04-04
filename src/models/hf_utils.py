@@ -100,8 +100,8 @@ def load_model_from_hf(model_name: str, peft: bool):
     if peft:
         peft_config = LoraConfig(
             task_type=TaskType.CAUSAL_LM,
-            r=64,
-            lora_alpha=64,
+            r=8,
+            lora_alpha=16,
             lora_dropout=0.1,
             modules_to_save=["lm_head", "embed_tokens"],
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
