@@ -5,10 +5,10 @@ from collections import Counter
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from src.models.ollama_utils import check_if_ollama_model_exists, use_ollama, query_ollama_model
-from src.models.hf_utils import query_hf_model
+from src.models.hf_utils import HF_Manager
 
 def query_with_sc(model, prompt, shots, use_ollama):
-    query_func = query_ollama_model if use_ollama else query_hf_model
+    query_func = query_ollama_model if use_ollama else HF_Manager.query_model
 
     query_params = {
         "temperature": 0.3,
@@ -21,28 +21,9 @@ def query_with_sc(model, prompt, shots, use_ollama):
         "custom_retry_delay": 5,
     }
 
-    # hf_model = AutoModelForCausalLM.from_pretrained("models/sentiment:50agree/llama3.2:1b/checkpoints/honest-serenity-73")
-    # hf_tokenizer = AutoTokenizer.from_pretrained("models/sentiment:50agree/llama3.2:1b/checkpoints/honest-serenity-73")
-    # hf_model_config = (hf_model, hf_tokenizer)
-    
-    # responses = []
-    # for i in range(2):
-    #     ollama_response = query_ollama_model("hf.co/hendrik-spl/test_honest-serenity-73-Q4_K_M-GGUF", prompt, query_params)
-    #     hf_response = query_hf_model(hf_model_config, prompt, query_params)
-    #     print(f"Response {i+1}:")
-    #     print(f"Prompt: {prompt}")
-    #     print(f"Ollama Reponse: {ollama_response}")
-    #     print(f"HF Reponse: {hf_response}")
-
-    # return "positive"
-
     responses = []
     for i in range(shots):
         response = query_func(model_config=model, prompt=prompt, params=query_params)
-        print(f"Response {i+1}:")
-        print(f"Reponse: {response}")
-        print(f"Cleaned response: {clean_llm_output_sentiment(response)}")
-        print(f"------------")
         responses.append(clean_llm_output_sentiment(response))
 
     majority_vote = find_majority(responses)
@@ -107,7 +88,6 @@ def get_model_config(model_name: str):
             hf_tokenizer = AutoTokenizer.from_pretrained(model_name)
             return (hf_model, hf_tokenizer), False
         
-# Add to src/models/hf_utils.py
 def load_finetuned_adapter(model_path):
     """
     Load a fine-tuned PEFT/LoRA adapter model from a local path

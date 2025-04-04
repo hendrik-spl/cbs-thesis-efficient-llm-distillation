@@ -16,7 +16,7 @@ def measure_performance_sentiment(args, wandb_run: wandb):
     Returns:
         None
     """
-    results = load_from_disk(f"models/{args.dataset}/{args.model_name}/inference_outputs/{wandb_run.name}")
+    results = load_from_disk(f"distillation-data/{args.dataset}/{args.model_name}/{wandb_run.name}")
 
     mapping = {
         "negative": 0,
