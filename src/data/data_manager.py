@@ -17,10 +17,7 @@ class SentimentDataManager:
             
         Returns:
             The main data split of the dataset.
-        """
-        if version not in ["50agree", "66agree", "75agree", "allagree"]:
-            raise ValueError(f"Invalid version {version}. Please choose from '50agree', '66agree', '75agree' or 'allagree'.")
-        
+        """        
         name = f"sentences_{version}"
         dataset = load_dataset(path="takala/financial_phrasebank", name=name, trust_remote_code=True)
         print(f"Loaded dataset {name} with {len(dataset['train'])} training samples.")
@@ -80,6 +77,5 @@ class SentimentDataManager:
             "completion": pred_labels
         }
         dataset = Dataset.from_dict(data)
-        output_dir = f"models/{dataset_name}/{model_name}/inference_outputs/{run_name}"
-        ensure_dir_exists(output_dir)
-        dataset.save_to_disk(output_dir)
+        output_dir = f"distillation-data/{dataset_name}/{model_name}/{run_name}"
+        dataset.save_to_disk(ensure_dir_exists(output_dir))
