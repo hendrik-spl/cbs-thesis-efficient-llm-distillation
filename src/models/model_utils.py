@@ -1,3 +1,4 @@
+import os
 import re
 import random
 from collections import Counter
@@ -15,22 +16,37 @@ def query_with_sc(model, prompt, shots, use_ollama):
         "do_sample": True, # Enable sampling for diversity
         "top_p": 0.8,
         "top_k": 40,
-        "max_new_tokens": 3,
+        "max_new_tokens": 50,
         "custom_max_retries": 3,
         "custom_retry_delay": 5,
     }
+
+    hf_model = AutoModelForCausalLM.from_pretrained("models/sentiment:50agree/llama3.2:1b/checkpoints/honest-serenity-73")
+    hf_tokenizer = AutoTokenizer.from_pretrained("models/sentiment:50agree/llama3.2:1b/checkpoints/honest-serenity-73")
+    hf_model_config = (hf_model, hf_tokenizer)
     
     responses = []
-    for i in range(shots):
-        response = query_func(model_config=model, prompt=prompt, params=query_params)
+    for i in range(2):
+        ollama_response = query_ollama_model("hf.co/hendrik-spl/test_honest-serenity-73-Q4_K_M-GGUF", prompt, query_params)
+        hf_response = query_hf_model(hf_model_config, prompt, query_params)
+        print(f"Response {i+1}:")
+        print(f"Prompt: {prompt}")
+        print(f"Ollama Reponse: {ollama_response}")
+        print(f"HF Reponse: {hf_response}")
+
+    return "positive"
+
+    # responses = []
+    # for i in range(shots):
+        # response = query_func(model_config=model, prompt=prompt, params=query_params)
         # print(f"Response {i+1}:")
         # print(f"Reponse: {response}")
         # print(f"Cleaned response: {clean_llm_output_sentiment(response)}")
         # print(f"------------")
-        responses.append(clean_llm_output_sentiment(response))
+        # responses.append(clean_llm_output_sentiment(response))
 
-    majority_vote = find_majority(responses)
-    return majority_vote
+    # majority_vote = find_majority(responses)
+    # return majority_vote
 
 def find_majority(responses):
     counter = Counter(responses)
@@ -79,6 +95,34 @@ def get_model_config(model_name: str):
         check_if_ollama_model_exists(model_name)
         return model_name, True
     else:
-        hf_model = AutoModelForCausalLM.from_pretrained(model_name)
-        hf_tokenizer = AutoTokenizer.from_pretrained(model_name)
-        return (hf_model, hf_tokenizer), False
+        # Check if this is a path to a fine-tuned model
+        if os.path.exists(model_name) and os.path.isdir(model_name):
+            # First, load the tokenizer to get its vocabulary size
+            tokenizer = AutoTokenizer.from_pretrained(model_name)
+            
+            # Get the base model name (usually stored in config)
+            import json
+            with open(os.path.join(model_name, "adapter_config.json"), "r") as f:
+                adapter_config = json.load(f)
+            base_model_name = adapter_config.get("base_model_name_or_path")
+            
+            # Load the base model first
+            base_model = AutoModelForCausalLM.from_pretrained(base_model_name)
+            
+            # Ensure tokenizer and model vocab sizes match
+            if tokenizer.pad_token is None:
+                special_tokens_dict = {'pad_token': '[PAD]'}
+                tokenizer.add_special_tokens(special_tokens_dict)
+                base_model.resize_token_embeddings(len(tokenizer))
+                base_model.config.pad_token_id = tokenizer.pad_token_id
+                
+            # Then load the adapter/LoRA weights
+            from peft import PeftModel
+            model = PeftModel.from_pretrained(base_model, model_name)
+            
+            return (model, tokenizer), False
+        else:
+            # Regular HF model loading
+            hf_model = AutoModelForCausalLM.from_pretrained(model_name)
+            hf_tokenizer = AutoTokenizer.from_pretrained(model_name)
+            return (hf_model, hf_tokenizer), False
