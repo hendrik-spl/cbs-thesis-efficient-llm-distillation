@@ -177,7 +177,6 @@ checkpoints/
 
 # Ignore data folder at root level but not src/data
 /data/
+/distillation-data/
 !src/data/
-
-# arrow files
-*.arrow
+/models/
