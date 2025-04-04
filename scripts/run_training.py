@@ -28,7 +28,7 @@ def parse_arguments():
 def run_training(student_model: str, teacher_model: str, dataset_name: str, epochs: int, inference_title: str, wandb_run: wandb, learning_rate: float, batch_size: int):
     print(f"Running training with model {student_model} on dataset {dataset_name} from {teacher_model} for {epochs} epochs.")
 
-    model, tokenizer, peft_config = load_model_from_hf(student_model, peft=True)
+    model, tokenizer = load_model_from_hf(student_model, peft=True)
     dataset = load_from_disk(f"models/{dataset_name}/{teacher_model}/inference_outputs/{inference_title}")
     dataset = DataTransforms.split_data(dataset)
 
@@ -73,7 +73,6 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         seed=42,
         packing=False, # pack the inputs for efficiency
         gradient_checkpointing=True, # use gradient checkpointing to save memory,
-        peft_config=peft_config, # use the peft config for the model
     )
 
     trainer = SFTTrainer(

@@ -1,5 +1,5 @@
 import torch
-from peft import LoraConfig, TaskType
+from peft import LoraConfig, TaskType, get_peft_model
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from src.models.hf_stopping import KeywordStoppingCriteria
 from transformers.generation.stopping_criteria import StoppingCriteriaList
@@ -100,14 +100,16 @@ def load_model_from_hf(model_name: str, peft: bool):
     if peft:
         peft_config = LoraConfig(
             task_type=TaskType.CAUSAL_LM,
-            r=16,
-            lora_alpha=32,
-            lora_dropout=0.05,
+            r=64,
+            lora_alpha=64,
+            lora_dropout=0.1,
             modules_to_save=["lm_head", "embed_token"],
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
                             "gate_proj", "up_proj", "down_proj",],
         )
         print(f"Loaded model {model_name} with PEFT configuration.")
-        return model, tokenizer, peft_config
+        model = get_peft_model(model, peft_config)
+        model.print_trainable_parameters()
+        return model, tokenizer
     
-    return model, tokenizer, None
+    return model, tokenizer
