@@ -38,7 +38,7 @@ def run_inference(model_name: str, dataset: str, wandb_run: wandb, run_on_test: 
     """
     print(f"Running inference with model {model_name} on dataset {dataset}. Limit: {limit}. Run on test: {run_on_test}. Shots: {shots}.")
 
-    prompts, true_labels, pred_labels = SentimentDataManager.load_data(run_on_test=run_on_test, limit=limit)
+    prompts, true_labels, pred_labels = SentimentDataManager.load_data(dataset_name=dataset, run_on_test=run_on_test, limit=limit)
 
     model_config, use_ollama = get_model_config(model_name)
 

@@ -52,8 +52,8 @@ class SentimentDataManager:
         return data
     
     @staticmethod
-    def load_data(run_on_test: bool = False, limit: str = None):
-        dataset = load_from_disk("data/sentiment")
+    def load_data(dataset_name, run_on_test: bool = False, limit: str = None):
+        dataset = load_from_disk(f"data/{dataset_name}")
         if run_on_test:
             data_split = dataset['test']
         else:
