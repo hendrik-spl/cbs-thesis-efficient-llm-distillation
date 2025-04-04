@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.data.data_manager import SentimentDataManager 
@@ -27,4 +28,8 @@ def load_sentiment_from_hf(version="allagree"):
     DataTransforms.save_data(data, dataset_path=f"data/sentiment:{version}")
 
 if __name__ == "__main__":
-    load_sentiment_from_hf()
+    parser = argparse.ArgumentParser(description="Load financial phrasebank sentiment dataset")
+    parser.add_argument("--version", type=str, default="allagree", choices=["50agree", "66agree", "75agree", "allagree"],help="Version of the dataset to load")
+    args = parser.parse_args()
+    
+    load_sentiment_from_hf(version=args.version)
