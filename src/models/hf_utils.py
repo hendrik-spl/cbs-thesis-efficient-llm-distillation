@@ -104,8 +104,6 @@ def load_model_from_hf(model_name: str, peft: bool):
             lora_alpha=16,
             lora_dropout=0.1,
             modules_to_save=["lm_head", "embed_tokens"],
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
-                            "gate_proj", "up_proj", "down_proj",],
         )
         print(f"Loaded model {model_name} with PEFT configuration.")
         model = get_peft_model(model, peft_config)
