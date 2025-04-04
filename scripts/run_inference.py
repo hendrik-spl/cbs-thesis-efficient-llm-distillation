@@ -21,7 +21,7 @@ def parse_arguments():
     parser.add_argument("--run_on_test", type=bool, default=False, help="Whether to run on the test set. If False, runs on the training set.")
     return parser.parse_args()
 
-def run_inference(model_name: str, dataset: str, wandb_run: wandb, run_on_test: bool = False, limit: int = None, shots: int = 5) -> str:
+def run_inference(model_name: str, dataset_name: str, wandb_run: wandb, run_on_test: bool = False, limit: int = None, shots: int = 5) -> str:
     """
     Run inference with a given model on a dataset.
 
@@ -36,9 +36,9 @@ def run_inference(model_name: str, dataset: str, wandb_run: wandb, run_on_test: 
     Returns:
         None
     """
-    print(f"Running inference with model {model_name} on dataset {dataset}. Limit: {limit}. Run on test: {run_on_test}. Shots: {shots}.")
+    print(f"Running inference with model {model_name} on dataset {dataset_name}. Limit: {limit}. Run on test: {run_on_test}. Shots: {shots}.")
 
-    prompts, true_labels, pred_labels = SentimentDataManager.load_data(dataset_name=dataset, run_on_test=run_on_test, limit=limit)
+    prompts, true_labels, pred_labels = SentimentDataManager.load_data(dataset_name=dataset_name, run_on_test=run_on_test, limit=limit)
 
     model_config, use_ollama = get_model_config(model_name)
 
@@ -49,7 +49,7 @@ def run_inference(model_name: str, dataset: str, wandb_run: wandb, run_on_test: 
         output_dir=ensure_dir_exists("results/metrics/emissions"),
         log_level="warning"
         ) as tracker:
-        for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset}"):
+        for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset_name}"):
             try:
                 pred_labels.append(query_with_sc(
                     model=model_config,
@@ -62,7 +62,7 @@ def run_inference(model_name: str, dataset: str, wandb_run: wandb, run_on_test: 
 
     log_inference_to_wandb(wandb_run, tracker, num_queries=len(prompts) * shots)
 
-    SentimentDataManager.save_model_outputs(prompts, true_labels, pred_labels, dataset, model_name, wandb_run.name)
+    SentimentDataManager.save_model_outputs(prompts, true_labels, pred_labels, dataset_name, model_name, wandb_run.name)
 
 def main():
     set_seed(42)
@@ -86,7 +86,7 @@ def main():
 
     run_inference(
         model_name=args.model_name, 
-        dataset=args.dataset,
+        dataset_name=args.dataset,
         limit=args.limit,
         run_on_test=args.run_on_test,
         wandb_run=wandb_run,

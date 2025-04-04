@@ -4,12 +4,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import wandb
 import argparse
+import subprocess
 from codecarbon import EmissionsTracker
 from trl import SFTConfig, SFTTrainer, DataCollatorForCompletionOnlyLM
 from transformers import EarlyStoppingCallback
 
 from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbon
-from src.models.hf_utils import load_model_from_hf
+from src.models.hf_utils import HF_Manager
 from src.utils.logs import log_training_to_wandb
 from datasets import load_from_disk
 from src.data.data_transforms import DataTransforms
@@ -20,20 +21,17 @@ def parse_arguments():
     parser.add_argument("--teacher_model", type=str, required=True, help="Name of the teacher model to load (e.g., 'llama3.2:1b')")
     parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment:50agree')")
     parser.add_argument("--inference_title", type=str, required=True, help="Title of the inference file to load")
-    parser.add_argument("--epochs", type=int, default=3, help="Number of epochs to train the model (default: 50)")
-    parser.add_argument("--batch_size", type=int, default=8, help="Training batch size (default: 8)")
-    parser.add_argument("--learning_rate", type=float, default=2e-5, help="Learning rate (default: 2e-5)")
+    parser.add_argument("--run_inference", type=bool, default=True, help="Whether to run inference after training (default: True)")
     return parser.parse_args()
 
-def run_training(student_model: str, teacher_model: str, dataset_name: str, epochs: int, inference_title: str, wandb_run: wandb, learning_rate: float, batch_size: int):
-    print(f"Running training with model {student_model} on dataset {dataset_name} from {teacher_model} for {epochs} epochs.")
+def run_training(student_model: str, teacher_model: str, dataset_name: str, inference_wandb_title: str, wandb_run: wandb, run_inference: bool = True):
+    print(f"Running training with model {student_model} on dataset {dataset_name} from {teacher_model}.")
 
-    model, tokenizer = load_model_from_hf(student_model, peft=True)
-    dataset = load_from_disk(f"models/{dataset_name}/{teacher_model}/inference_outputs/{inference_title}")
-    dataset = DataTransforms.split_data(dataset)
+    model, tokenizer = HF_Manager.load_model(student_model, peft=True)
+    dataset = load_from_disk(f"distillation-data/{dataset_name}/{teacher_model}/{inference_wandb_title}") # load the distillation dataset 
+    dataset = DataTransforms.split_data(dataset) # split the train dataset into train and test/valid sets
 
-    model_output_dir = ensure_dir_exists(f"models/{dataset_name}/{student_model}/checkpoints/{wandb_run.name}")
-    emissions_output_dir = ensure_dir_exists(f"results/metrics/emissions")
+    model_output_dir = ensure_dir_exists(f"models/{dataset_name}/{student_model}/{wandb_run.name}")
 
     early_stopping = EarlyStoppingCallback(early_stopping_patience=3, early_stopping_threshold=0.01)
 
@@ -45,14 +43,14 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         report_to='wandb',
 
         # Training schedule
-        num_train_epochs=epochs, # Number of epochs to train
-        learning_rate=learning_rate, # Learning rate
+        num_train_epochs=5, # Number of epochs to train
+        learning_rate=2e-5, # Learning rate
         lr_scheduler_type="cosine", # learning rate scheduler
         warmup_ratio=0.05, # warmup ratio for the learning rate scheduler      
 
         # Batch handling
-        per_device_train_batch_size=batch_size, # Training batch size
-        per_device_eval_batch_size=batch_size, # Evaluation batch size
+        per_device_train_batch_size=8, # Training batch size
+        per_device_eval_batch_size=8, # Evaluation batch size
         gradient_accumulation_steps=8, # effective batch size = batch_size * gradient_accumulation_steps
 
         # Evaluation and saving
@@ -79,7 +77,7 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         model=model,
         args=training_args,
         train_dataset=dataset['train'],
-        eval_dataset=dataset['test'],
+        eval_dataset=dataset['test'], # test is the validation set of the distillation dataset
         tokenizer=tokenizer,
         callbacks=[early_stopping],
         data_collator=data_collator,
@@ -89,15 +87,35 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, epoc
         project_name="model-distillation",
         experiment_id=wandb_run.name,
         tracking_mode="machine",
-        output_dir=emissions_output_dir,
+        output_dir=ensure_dir_exists(f"results/metrics/emissions"),
         log_level="warning"
         ) as tracker:
         trainer.train()
 
-    log_training_to_wandb(wandb_run, tracker, epochs)
+    log_training_to_wandb(wandb_run, tracker)
 
     trainer.save_model(model_output_dir)
     tokenizer.save_pretrained(model_output_dir)
+
+    HF_Manager.predict_on_testset(model=model_output_dir, dataset_name=dataset_name)
+
+    # Run inference on the test set after training
+    if run_inference:
+        print("Running inference on the test set...")
+
+        inference_script_path = os.path.join(os.path.dirname(__file__), "run_inference.py")
+        inference_command = [
+            "python", inference_script_path,
+            "--model_name", f"{model_output_dir}",
+            "--dataset", dataset_name,
+            "--run_on_test", True
+        ]
+
+        try:
+            subprocess.run(inference_command, check=True)
+            print("Inference on test set completed successfully")
+        except subprocess.CalledProcessError as e:
+            print(f"Error running inference: {e}")
 
 def main():
     set_seed(42)
@@ -112,10 +130,8 @@ def main():
         "student_model": args.student_model,
         "teacher_model": args.teacher_model,
         "dataset": args.dataset,
-        "epochs": args.epochs,
         "inference_title": args.inference_title,
-        "batch_size": args.batch_size,
-        "learning_rate": args.learning_rate
+        "run_inference": args.run_inference
     }
 
     wandb_run = wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-training", tags=tags, config=config)
@@ -124,11 +140,9 @@ def main():
         student_model = args.student_model,
         teacher_model = args.teacher_model,
         dataset_name = args.dataset,
-        epochs = args.epochs,
-        inference_title = args.inference_title,
+        inference_wandb_title = args.inference_title,
+        run_inference=args.run_inference,
         wandb_run=wandb_run,
-        learning_rate=args.learning_rate,
-        batch_size=args.batch_size
         )
 
 if __name__ == "__main__":
