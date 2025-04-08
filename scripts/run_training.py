@@ -77,7 +77,7 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, infe
             "python", inference_script_path,
             "--model_name", f"{model_output_dir}",
             "--dataset", dataset_name,
-            "--run_on_test", True
+            "--run_on_test", "True"
         ]
 
         try:
