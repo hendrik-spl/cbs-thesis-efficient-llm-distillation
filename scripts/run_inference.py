@@ -47,6 +47,8 @@ def run_inference(model_name: str, dataset_name: str, wandb_run: wandb, run_on_t
     # model, tokenizer = HF_Manager.load_model(model_name="llama3.3:70b", peft=False)
     # model_config = (model, tokenizer)
     # use_ollama = False
+    
+    wandb_run.log({"use_ollama": use_ollama})
 
     with EmissionsTracker(
         project_name="model-distillation",
