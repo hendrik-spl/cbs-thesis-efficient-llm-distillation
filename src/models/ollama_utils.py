@@ -2,8 +2,7 @@ import os
 import time
 import ollama
 from ollama import chat, ChatResponse
-
-from src.models.model_utils import model_mapping
+from src.models.model_mapping import model_mapping
 
 def query_ollama_model(model_config, prompt, params):
     """
@@ -74,7 +73,7 @@ def check_if_ollama_model_exists(model_name):
     Returns:
         bool: True if the model exists, False otherwise.
     """
-    model_name = ollama_model_mapping.get(model_name, model_name)
+    model_name = model_mapping[model_name]["ollama"]
     try:
         list = ollama.list()
         if len(list.models) == 0:

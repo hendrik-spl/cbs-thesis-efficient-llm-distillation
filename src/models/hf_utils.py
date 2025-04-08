@@ -7,7 +7,7 @@ from transformers.generation.stopping_criteria import StoppingCriteriaList
 
 from src.models.hf_stopping import KeywordStoppingCriteria
 from src.prompts.sentiment import get_sentiment_prompt
-from src.models.model_utils import model_mapping
+from src.models.model_mapping import model_mapping
 
 class HF_Manager:
     
