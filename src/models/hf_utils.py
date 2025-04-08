@@ -27,7 +27,6 @@ class HF_Manager:
             prompt = get_sentiment_prompt(sentence)
             completion = pipe(prompt, max_new_tokens=10)
             completion = completion[0]["generated_text"]
-            print(f"Completion before processing: {completion}")
             label_pos = completion.find("Final Label:")
             if label_pos == -1:
                 print("Label not found in completion.")
@@ -52,7 +51,7 @@ class HF_Manager:
         tokenizer = model_config[1]
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        # model.to(device)
+        model.to(device)
 
         # Tokenize the input prompt
         inputs = tokenizer(prompt, return_tensors="pt").to(device)
