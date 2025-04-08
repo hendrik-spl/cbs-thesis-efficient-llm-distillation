@@ -67,8 +67,9 @@ def run_inference(model_name: str, dataset_name: str, wandb_run: wandb, run_on_t
                 print(f"Error during inference: {e}")
 
     log_inference_to_wandb(wandb_run, tracker, num_queries=len(prompts) * shots)
-
-    SentimentDataManager.save_model_outputs(prompts, true_labels, pred_labels, dataset_name, model_name, wandb_run.name)
+    
+    if not run_on_test: # only save the model outputs if running on the training set
+        SentimentDataManager.save_model_outputs(prompts, true_labels, pred_labels, dataset_name, model_name, wandb_run.name)
 
 def main():
     set_seed(42)
