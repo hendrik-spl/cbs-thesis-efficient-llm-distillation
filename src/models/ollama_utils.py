@@ -3,12 +3,7 @@ import time
 import ollama
 from ollama import chat, ChatResponse
 
-ollama_model_mapping = {
-    "llama3.1:8b": "llama3.1:8b-instruct-q4_K_M",
-    "llama3.1:405b": "llama3.1:405b-instruct-q4_K_M",
-    "llama3.2:1b": "llama3.2:1b-instruct-q4_K_M",
-    "llama3.3:70b": "llama3.3:70b-instruct-q4_K_M",
-}
+from src.models.model_utils import model_mapping
 
 def query_ollama_model(model_config, prompt, params):
     """
@@ -25,8 +20,7 @@ def query_ollama_model(model_config, prompt, params):
     Returns:
         str or None: The response content if the request was successful, None otherwise.
     """
-    model_name = ollama_model_mapping.get(model_config, model_config)
-    print("Using ollama with model:", model_name)
+    model_name = model_mapping[model_config]["ollama"]
 
     messages = [{"role": "user", "content": prompt}]
     options = {

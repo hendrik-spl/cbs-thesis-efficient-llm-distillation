@@ -7,6 +7,7 @@ from transformers.generation.stopping_criteria import StoppingCriteriaList
 
 from src.models.hf_stopping import KeywordStoppingCriteria
 from src.prompts.sentiment import get_sentiment_prompt
+from src.models.model_utils import model_mapping
 
 class HF_Manager:
     
@@ -93,18 +94,8 @@ class HF_Manager:
             tokenizer (PreTrainedTokenizer): The tokenizer loaded from the model hub.
             peft_config (Optional[LoraConfig]): The PEFT configuration for the model, if it exists.
         """
-        model_hf_mapping = {
-            "llama3.1:8b": "meta-llama/Llama-3.1-8B-Instruct",
-            "llama3.1:405b": "meta-llama/Llama-3.1-405B-Instruct",
-            "llama3.2:1b": "meta-llama/Llama-3.2-1B-Instruct",
-            "llama3.2:3b": "meta-llama/Llama-3.2-3B-Instruct",
-            "llama3.3:70b": "meta-llama/Llama-3.3-70B-Instruct",
-            "smollm2:135m": "HuggingFaceTB/SmolLM2-135M-Instruct",
-        }
-        if model_name in model_hf_mapping:
-            model_name = model_hf_mapping[model_name]
-        else:
-            raise ValueError(f"Model name {model_name} not recognized. Predefined models are: {model_hf_mapping.keys()}")
+        model_name = model_mapping[model_name]["HF"]
+
         model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
         tokenizer = AutoTokenizer.from_pretrained(model_name)
 
