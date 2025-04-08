@@ -43,11 +43,11 @@ class HF_Manager:
         model = model_config[0]
         tokenizer = model_config[1]
 
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        model.to(device)
+        # device = "cuda" if torch.cuda.is_available() else "cpu"
+        # model.to(device)
 
         # Tokenize the input prompt
-        inputs = tokenizer(prompt, return_tensors="pt").to(device)
+        inputs = tokenizer(prompt, return_tensors="pt")#.to(device)
         prompt_length = inputs.input_ids.shape[1]
 
         # Create stopping criteria - stop on seeing these keywords or patterns
@@ -98,7 +98,7 @@ class HF_Manager:
             model_name = model_hf_mapping[model_name]
         else:
             raise ValueError(f"Model name {model_name} not recognized. Predefined models are: {model_hf_mapping.keys()}")
-        model = AutoModelForCausalLM.from_pretrained(model_name)
+        model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
         tokenizer = AutoTokenizer.from_pretrained(model_name)
 
         if tokenizer.pad_token is None:
