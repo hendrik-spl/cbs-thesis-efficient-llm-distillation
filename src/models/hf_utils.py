@@ -50,12 +50,21 @@ class HF_Manager:
         model = model_config[0]
         tokenizer = model_config[1]
 
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        model.to(device)
+        device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-        # Tokenize the input prompt
-        inputs = tokenizer(prompt, return_tensors="pt").to(device)
-        prompt_length = inputs.input_ids.shape[1]
+        # Tokenize the input prompt and move to the appropriate device
+        inputs = tokenizer(prompt, return_tensors="pt")
+        # Move inputs to the same device as the models first parameter
+        if hasattr(model, "device"):
+            device = model.device
+        else:
+            # For models distributed across multiple devices, get device of first parameter
+            param_device = next(model.parameters()).device
+            device = param_device
+            
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+
+        prompt_length = inputs["input_ids"].shape[1]
 
         # Create stopping criteria - stop on seeing these keywords or patterns
         stop_words = ["text:"]
