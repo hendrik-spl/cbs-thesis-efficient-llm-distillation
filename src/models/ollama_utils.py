@@ -3,6 +3,13 @@ import time
 import ollama
 from ollama import chat, ChatResponse
 
+ollama_model_mapping = {
+    "llama3.1:8b": "llama3.1:8b-instruct-q4_K_M",
+    "llama3.1:405b": "llama3.1:405b-instruct-q4_K_M",
+    "llama3.2:1b": "llama3.2:1b-instruct-q4_K_M",
+    "llama3.3:70b": "llama3.3:70b-instruct-q4_K_M",
+}
+
 def query_ollama_model(model_config, prompt, params):
     """
     Sends a chat request to the Ollama API with the given model and prompt using the Ollama SDK.
@@ -18,6 +25,9 @@ def query_ollama_model(model_config, prompt, params):
     Returns:
         str or None: The response content if the request was successful, None otherwise.
     """
+    model_name = ollama_model_mapping.get(model_config, model_config)
+    print("Using ollama with model:", model_name)
+
     messages = [{"role": "user", "content": prompt}]
     options = {
         "temperature": params.get("temperature"),
@@ -33,7 +43,7 @@ def query_ollama_model(model_config, prompt, params):
     for attempt in range(max_retries):
         try:
             response: ChatResponse = chat(
-                model=model_config,
+                model=model_name,
                 messages=messages,
                 options=options
             )
@@ -70,6 +80,7 @@ def check_if_ollama_model_exists(model_name):
     Returns:
         bool: True if the model exists, False otherwise.
     """
+    model_name = ollama_model_mapping.get(model_name, model_name)
     try:
         list = ollama.list()
         if len(list.models) == 0:
