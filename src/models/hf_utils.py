@@ -26,6 +26,7 @@ class HF_Manager:
             prompt = get_sentiment_prompt(sentence)
             completion = pipe(prompt, max_new_tokens=10)
             completion = completion[0]["generated_text"]
+            print(f"Completion before processing: {completion}")
             label_pos = completion.find("Final Label:")
             if label_pos == -1:
                 print("Label not found in completion.")
@@ -34,7 +35,6 @@ class HF_Manager:
             print(f"Example {i}:")
             print(f"Prompt: {prompt}")
             print(f"Completion by student: {completion}")
-            print(f"Completion by teacher: {example['completion']}")
             print(f"-----------")
             if wandb_run:
                 wandb_run.log({
