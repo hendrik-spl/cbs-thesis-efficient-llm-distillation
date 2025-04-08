@@ -42,6 +42,12 @@ def run_inference(model_name: str, dataset_name: str, wandb_run: wandb, run_on_t
 
     model_config, use_ollama = get_model_config(model_name)
 
+    # manual override to load llama3.3:70b model from HF
+    # from src.models.hf_utils import HF_Manager
+    # model, tokenizer = HF_Manager.load_model(model_name="llama3.3:70b", peft=False)
+    # model_config = (model, tokenizer)
+    # use_ollama = False
+
     with EmissionsTracker(
         project_name="model-distillation",
         experiment_id=wandb_run.name,
