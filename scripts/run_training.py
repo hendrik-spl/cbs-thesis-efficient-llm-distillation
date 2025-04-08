@@ -14,6 +14,7 @@ from src.models.hf_utils import HF_Manager
 from src.utils.logs import log_training_to_wandb
 from datasets import load_from_disk
 from src.data.data_transforms import DataTransforms
+from scripts.training_config import get_sft_config
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run training with models")
@@ -37,41 +38,8 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, infe
 
     data_collator = DataCollatorForCompletionOnlyLM(response_template="Final Label:", tokenizer=tokenizer)
 
-    training_args = SFTConfig(
-        output_dir=model_output_dir,
-        run_name=f"{student_model}_{dataset_name}_{wandb_run.name}",
-        report_to='wandb',
-
-        # Training schedule
-        num_train_epochs=5, # Number of epochs to train
-        learning_rate=2e-5, # Learning rate
-        lr_scheduler_type="cosine", # learning rate scheduler
-        warmup_ratio=0.05, # warmup ratio for the learning rate scheduler      
-
-        # Batch handling
-        per_device_train_batch_size=8, # Training batch size
-        per_device_eval_batch_size=8, # Evaluation batch size
-        gradient_accumulation_steps=8, # effective batch size = batch_size * gradient_accumulation_steps
-
-        # Evaluation and saving
-        eval_strategy="epoch", # means evaluate by steps
-        logging_strategy="epoch", # means log by steps
-        save_strategy="best", # saves the best model
-        save_total_limit=1, # saves only the best model
-        load_best_model_at_end=True, # loads the best model at the end
-        metric_for_best_model="eval_loss", # metric to use to compare models
-        greater_is_better=False, # lower is better for loss
-
-        # Regularization
-        weight_decay=0.1, # add l2 regularization to the model
-        max_grad_norm=0.3, # max gradient norm for clipping
-        
-        # Performance
-        max_seq_length=384, # set based on analysis of the dataset 
-        seed=42,
-        packing=False, # pack the inputs for efficiency
-        gradient_checkpointing=True, # use gradient checkpointing to save memory,
-    )
+    sft_config = get_sft_config(student_model, dataset_name, wandb_run, model_output_dir)
+    training_args = SFTConfig(**sft_config)
 
     trainer = SFTTrainer(
         model=model,
