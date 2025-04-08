@@ -54,6 +54,6 @@ def get_model_specific_params(model_name):
 def get_dataset_specific_params(dataset_name):
     params = {}
     if "sentiment" in dataset_name:
-        params["max_sequence_length"] = 384
+        params["max_seq_length"] = 384
         params["num_train_epochs"] = 5
     return params
