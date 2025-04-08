@@ -109,6 +109,9 @@ echo_info "Current directory: $(pwd)"
 # Set cache directory for uv
 export UV_CACHE_DIR=$(pwd)/.cache/uv
 
+# Set cache directory for HF
+export HF_HOME=$(pwd)/.cache/huggingface
+
 # Check if .venv exists and remove if it's invalid
 if [ -d ".venv" ] && [ ! -f ".venv/bin/python" ]; then
     echo_info "Found invalid .venv directory. Removing it..."
