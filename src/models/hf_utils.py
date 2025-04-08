@@ -1,31 +1,27 @@
 import torch
 from tqdm import tqdm
 from transformers import pipeline
-from datasets import load_from_disk
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation.stopping_criteria import StoppingCriteriaList
 
 from src.models.hf_stopping import KeywordStoppingCriteria
-from src.prompts.sentiment import get_sentiment_prompt
 
 class HF_Manager:
     
     @staticmethod
-    def predict_on_testset(model_path, dataset_name, wandb_run=None, limit=5):
-        test_dataset = load_from_disk(f"data/{dataset_name}/test")
-        
+    def predict(model_path, dataset, wandb_run=None, limit=5):
+
         pipe = pipeline(
             model=model_path,
             task="text-generation",
             )
 
-        print(f"Running test inference with model {model_path} on dataset {dataset_name}. Limit: {limit}.")
-        for i, example in tqdm(enumerate(test_dataset), total=min(limit, len(test_dataset))):
+        print(f"Running test inference with model {model_path} on dataset {dataset.shape}. Limit: {limit}.")
+        for i, example in tqdm(enumerate(dataset), total=min(limit, len(dataset))):
             if i >= limit:
                 break
-            sentence = example["sentence"]
-            prompt = get_sentiment_prompt(sentence)
+            prompt = example["prompt"]
             completion = pipe(prompt, max_new_tokens=10)
             completion = completion[0]["generated_text"]
             label_pos = completion.find("Final Label:")
@@ -33,10 +29,19 @@ class HF_Manager:
                 print("Label not found in completion.")
                 continue
             completion = completion[label_pos + len("Final Label:"):].strip()
-            print(f"Sentence: {sentence}")
-            print(f"Completion: {completion}")
+            print(f"Example {i}:")
+            print(f"Prompt: {prompt}")
+            print(f"Completion by student: {completion}")
+            print(f"Completion by teacher: {example['completion']}")
+            print(f"-----------")
             if wandb_run:
-                wandb_run.log({"sample": i, "prompt": prompt, "completion": completion})
+                wandb_run.log({
+                    "dataset_size": dataset.shape,
+                    "sample": i,
+                    "prompt": prompt,
+                    "student_completion": completion
+                    })
+            
             
     @staticmethod
     def query_model(model_config, prompt, params):

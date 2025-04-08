@@ -97,7 +97,8 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, infe
     trainer.save_model(model_output_dir)
     tokenizer.save_pretrained(model_output_dir)
 
-    HF_Manager.predict_on_testset(model_path=model_output_dir, dataset_name=dataset_name)
+    test_dataset = load_from_disk(f"data/{dataset_name}/test")
+    HF_Manager.predict(model_path=model_output_dir, dataset=test_dataset, wandb_run=wandb_run)
 
     # Run inference on the test set after training
     if run_inference:
