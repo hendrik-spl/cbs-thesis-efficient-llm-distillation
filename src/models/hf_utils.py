@@ -6,6 +6,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation.stopping_criteria import StoppingCriteriaList
 
 from src.models.hf_stopping import KeywordStoppingCriteria
+from src.prompts.sentiment import get_sentiment_prompt
 
 class HF_Manager:
     
@@ -21,7 +22,8 @@ class HF_Manager:
         for i, example in tqdm(enumerate(dataset), total=min(limit, len(dataset))):
             if i >= limit:
                 break
-            prompt = example["prompt"]
+            sentence = example["sentence"]
+            prompt = get_sentiment_prompt(sentence)
             completion = pipe(prompt, max_new_tokens=10)
             completion = completion[0]["generated_text"]
             label_pos = completion.find("Final Label:")
