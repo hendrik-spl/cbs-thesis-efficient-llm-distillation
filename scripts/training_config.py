@@ -49,6 +49,11 @@ def get_model_specific_params(model_name):
         params["per_device_eval_batch_size"] = 4
         params["gradient_accumulation_steps"] = 16
         params["learning_rate"] = 1e-5
+    if "70b" in model_name:
+        params["per_device_train_batch_size"] = 1
+        params["per_device_eval_batch_size"] = 1
+        params["gradient_accumulation_steps"] = 64
+        params["learning_rate"] = 5e-6
     return params
 
 def get_dataset_specific_params(dataset_name):
