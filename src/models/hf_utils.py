@@ -8,6 +8,7 @@ from transformers.generation.stopping_criteria import StoppingCriteriaList
 from src.models.hf_stopping import KeywordStoppingCriteria
 from src.prompts.sentiment import get_sentiment_prompt
 from src.models.model_mapping import model_mapping
+from src.models.model_utils import find_majority, clean_llm_output_sentiment, query_params_sentiment
 
 class HF_Manager:
     
@@ -44,12 +45,17 @@ class HF_Manager:
                     "student_completion": completion
                     })
             
-            
     @staticmethod
-    def query_model(model_config, prompt, params):
-        model = model_config[0]
-        tokenizer = model_config[1]
+    def query_hf_sc(model, tokenizer, prompt, shots):
+        responses = []
+        for i in range(shots):
+            response = HF_Manager.query_model(model, tokenizer, prompt, query_params_sentiment)
+            responses.append(clean_llm_output_sentiment(response))
+        
+        return find_majority(responses)
 
+    @staticmethod
+    def query_model(model, tokenizer, prompt, params):
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
         # Tokenize the input prompt and move to the appropriate device
@@ -104,7 +110,9 @@ class HF_Manager:
         """
         model_name = model_mapping[model_name]["HF"]
 
-        model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
+        model = AutoModelForCausalLM.from_pretrained(model_name, 
+                                                     # device_map="auto"
+                                                     )
         tokenizer = AutoTokenizer.from_pretrained(model_name)
 
         if tokenizer.pad_token is None:
@@ -136,5 +144,46 @@ class HF_Manager:
             print(f"Loaded model {model_name} with PEFT configuration.")
             model = get_peft_model(model, peft_config)
             model.print_trainable_parameters()
+        
+        return model, tokenizer
+    
+    @staticmethod
+    def load_finetuned_adapter(model_path):
+        """
+        Load a fine-tuned PEFT/LoRA adapter model from a local path
+        """
+        import json
+        import os
+        from peft import PeftModel
+        import torch
+        
+        # Step 1: Load the tokenizer from the fine-tuned model
+        tokenizer = AutoTokenizer.from_pretrained(model_path)
+        
+        # Step 2: Get the base model name from adapter_config.json
+        with open(os.path.join(model_path, "adapter_config.json"), "r") as f:
+            adapter_config = json.load(f)
+        base_model_name = adapter_config.get("base_model_name_or_path")
+        
+        print(f"Loading base model: {base_model_name}")
+        print(f"Tokenizer vocabulary size: {len(tokenizer)}")
+        
+        # Step 3: Load base model with the EXACT config from the adapter
+        base_model = AutoModelForCausalLM.from_pretrained(
+            base_model_name,
+            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
+        )
+        
+        # Step 4: CRITICAL - Resize token embeddings BEFORE loading adapter
+        base_model.resize_token_embeddings(len(tokenizer))
+        
+        # Step 5: Set pad token ID if it exists
+        if tokenizer.pad_token_id is not None:
+            base_model.config.pad_token_id = tokenizer.pad_token_id
+            print(f"Set pad_token_id to {tokenizer.pad_token_id}")
+        
+        # Step 6: Now load the adapter
+        print(f"Loading adapter from {model_path}")
+        model = PeftModel.from_pretrained(base_model, model_path)
         
         return model, tokenizer

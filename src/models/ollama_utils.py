@@ -3,8 +3,17 @@ import time
 import ollama
 from ollama import chat, ChatResponse
 from src.models.model_mapping import model_mapping
+from src.models.model_utils import query_params_sentiment, clean_llm_output_sentiment, find_majority
 
-def query_ollama_model(model_config, prompt, params):
+def query_ollama_sc(model, prompt, shots):
+    responses = []
+    for i in range(shots):
+        response = query_ollama_model(model, prompt, query_params_sentiment)
+        responses.append(clean_llm_output_sentiment(response))
+    
+    return find_majority(responses)
+
+def query_ollama_model(model, prompt, params):
     """
     Sends a chat request to the Ollama API with the given model and prompt using the Ollama SDK.
 
@@ -19,7 +28,7 @@ def query_ollama_model(model_config, prompt, params):
     Returns:
         str or None: The response content if the request was successful, None otherwise.
     """
-    model_name = model_mapping[model_config]["ollama"]
+    model_name = model_mapping[model]["ollama"]
 
     messages = [{"role": "user", "content": prompt}]
     options = {

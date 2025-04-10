@@ -1,33 +1,43 @@
-import os
 import re
 import random
 from collections import Counter
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from src.models.ollama_utils import check_if_ollama_model_exists, use_ollama, query_ollama_model
-from src.models.hf_utils import HF_Manager
+# from src.models.ollama_utils import check_if_ollama_model_exists, use_ollama, query_ollama_model
+# from src.models.hf_utils import HF_Manager
 
-def query_with_sc(model, prompt, shots, use_ollama):
-    query_func = query_ollama_model if use_ollama else HF_Manager.query_model
+query_params_sentiment = {
+    "temperature": 0.3,
+    "seed": None, # Set to None for self-consistency
+    "do_sample": True, # Enable sampling for diversity
+    "top_p": 0.8,
+    "top_k": 40,
+    "max_new_tokens": 50,
+    "custom_max_retries": 3,
+    "custom_retry_delay": 5,
+}
 
-    query_params = {
-        "temperature": 0.3,
-        "seed": None, # Set to None for self-consistency
-        "do_sample": True, # Enable sampling for diversity
-        "top_p": 0.8,
-        "top_k": 40,
-        "max_new_tokens": 50,
-        "custom_max_retries": 3,
-        "custom_retry_delay": 5,
-    }
+# def query_with_sc(model, prompt, shots, use_ollama):
+#     query_func = query_ollama_model if use_ollama else HF_Manager.query_model
 
-    responses = []
-    for i in range(shots):
-        response = query_func(model_config=model, prompt=prompt, params=query_params)
-        responses.append(clean_llm_output_sentiment(response))
+#     query_params = {
+#         "temperature": 0.3,
+#         "seed": None, # Set to None for self-consistency
+#         "do_sample": True, # Enable sampling for diversity
+#         "top_p": 0.8,
+#         "top_k": 40,
+#         "max_new_tokens": 50,
+#         "custom_max_retries": 3,
+#         "custom_retry_delay": 5,
+#     }
 
-    majority_vote = find_majority(responses)
-    return majority_vote
+#     responses = []
+#     for i in range(shots):
+#         response = query_func(model_config=model, prompt=prompt, params=query_params)
+#         responses.append(clean_llm_output_sentiment(response))
+
+#     majority_vote = find_majority(responses)
+#     return majority_vote
 
 def find_majority(responses):
     counter = Counter(responses)
@@ -71,22 +81,22 @@ def clean_llm_output_sentiment(text: str):
     
     return majority
 
-def get_model_config(model_name: str):
-    if use_ollama(model_name):
-        check_if_ollama_model_exists(model_name)
-        return model_name, True
-    else:
-        # Check if this is a PEFT adapter model path
-        if os.path.exists(os.path.join(model_name, "adapter_config.json")):
-            print(f"Loading as PEFT adapter model: {model_name}")
-            model, tokenizer = load_finetuned_adapter(model_name)
-            return (model, tokenizer), False
-        else:
-            # Regular HF model loading
-            print(f"Loading as standard model: {model_name}")
-            hf_model = AutoModelForCausalLM.from_pretrained(model_name)
-            hf_tokenizer = AutoTokenizer.from_pretrained(model_name)
-            return (hf_model, hf_tokenizer), False
+# def get_model_config(model_name: str):
+#     if use_ollama(model_name):
+#         check_if_ollama_model_exists(model_name)
+#         return model_name, True
+#     else:
+#         # Check if this is a PEFT adapter model path
+#         if os.path.exists(os.path.join(model_name, "adapter_config.json")):
+#             print(f"Loading as PEFT adapter model: {model_name}")
+#             model, tokenizer = load_finetuned_adapter(model_name)
+#             return (model, tokenizer), False
+#         else:
+#             # Regular HF model loading
+#             print(f"Loading as standard model: {model_name}")
+#             hf_model = AutoModelForCausalLM.from_pretrained(model_name)
+#             hf_tokenizer = AutoTokenizer.from_pretrained(model_name)
+#             return (hf_model, hf_tokenizer), False
         
 def load_finetuned_adapter(model_path):
     """
