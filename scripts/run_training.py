@@ -62,7 +62,8 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, infe
 
     log_training_to_wandb(wandb_run, tracker)
 
-    trainer.save_model(model_output_dir)
+    merged_model = model.merge_and_unload()
+    merged_model.save_pretrained(model_output_dir)
     tokenizer.save_pretrained(model_output_dir)
 
     test_dataset = load_from_disk(f"data/{dataset_name}/test")
