@@ -1,3 +1,4 @@
+import os
 import torch
 from tqdm import tqdm
 from transformers import pipeline
@@ -108,7 +109,15 @@ class HF_Manager:
             tokenizer (PreTrainedTokenizer): The tokenizer loaded from the model hub.
             peft_config (Optional[LoraConfig]): The PEFT configuration for the model, if it exists.
         """
-        model_name = model_mapping[model_name]["HF"]
+        # if model name is not a valid path
+        if not os.path.exists(model_name):
+            print(f"Model name {model_name} is not a valid path. Checking model mapping.")
+            if model_name not in model_mapping:
+                model_name = model_mapping[model_name]["HF"]
+                raise ValueError(f"Model name {model_name} not found in model mapping.")
+            print(f"Model name {model_name} found in model mapping. Using Hugging Face model name.")
+        else:
+            print(f"Model name {model_name} is a valid path. Loading model from local path.")
 
         model = AutoModelForCausalLM.from_pretrained(model_name, 
                                                      # device_map="auto"
