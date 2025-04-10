@@ -28,7 +28,7 @@ def query_ollama_model(model, prompt, params):
     Returns:
         str or None: The response content if the request was successful, None otherwise.
     """
-    model_name = model_mapping[model]["ollama"]
+    model_name = model_mapping.get(model, {}).get("ollama", model)
 
     messages = [{"role": "user", "content": prompt}]
     options = {
@@ -82,7 +82,8 @@ def check_if_ollama_model_exists(model_name):
     Returns:
         bool: True if the model exists, False otherwise.
     """
-    model_name = model_mapping[model_name]["ollama"]
+    # Try to get the value from the mapping, otherwise continue with original model_name
+    model_name = model_mapping.get(model_name, {}).get("ollama", model_name)
     try:
         list = ollama.list()
         if len(list.models) == 0:
