@@ -9,7 +9,7 @@ from codecarbon import EmissionsTracker
 
 from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbon
 from src.utils.logs import log_inference_to_wandb
-from src.models.ollama_utils import query_ollama_sc
+from src.models.ollama_utils import query_ollama_sc, check_if_ollama_model_exists
 from src.models.hf_utils import HF_Manager
 from src.evaluation.evaluate import evaluate_performance
 from src.data.data_manager import SentimentDataManager
@@ -97,6 +97,7 @@ def main():
     wandb_run.log({"use_ollama": args.use_ollama})
 
     if args.use_ollama == "True":
+        check_if_ollama_model_exists(args.model_name)
         tracker, num_queries, prompts, true_labels, pred_labels = run_inference_ollama(
             model_name=args.model_name, 
             dataset_name=args.dataset,
