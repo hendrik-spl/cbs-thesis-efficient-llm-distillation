@@ -158,7 +158,7 @@ class HF_Manager:
 
         # Step 2: Load the fine-tuned adapter model directly
         print(f"Loading fine-tuned adapter model from {model_path}")
-        model = AutoPeftModelForCausalLM.from_pretrained(model_path)
+        model = AutoPeftModelForCausalLM.from_pretrained(model_path, device_map="auto")
 
         if tokenizer.pad_token is None:
             print(f"Tokenizer {tokenizer.name_or_path} does not have a pad token. Setting a unique pad token.")
