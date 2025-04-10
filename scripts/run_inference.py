@@ -87,14 +87,12 @@ def main():
         "dataset": args.dataset,
         "limit": args.limit,
         "run_on_test": args.run_on_test,
-        "use_ollama": args.use_ollama
+        "use_ollama": str(args.use_ollama)
     }
 
     custom_notes = ""
 
     wandb_run = wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-inference-v2", tags=tags, config=config, notes=custom_notes)
-
-    wandb_run.log({"use_ollama": args.use_ollama})
 
     if args.use_ollama == "True":
         check_if_ollama_model_exists(args.model_name)

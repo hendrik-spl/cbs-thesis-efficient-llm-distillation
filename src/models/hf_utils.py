@@ -178,10 +178,7 @@ class HF_Manager:
         print(f"Tokenizer vocabulary size: {len(tokenizer)}")
         
         # Step 3: Load base model with the EXACT config from the adapter
-        base_model = AutoModelForCausalLM.from_pretrained(
-            base_model_name,
-            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
-        )
+        base_model = AutoModelForCausalLM.from_pretrained(base_model_name)
         
         # Step 4: CRITICAL - Resize token embeddings BEFORE loading adapter
         base_model.resize_token_embeddings(len(tokenizer))
