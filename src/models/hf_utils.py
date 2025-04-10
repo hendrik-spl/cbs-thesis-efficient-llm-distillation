@@ -108,7 +108,7 @@ class HF_Manager:
             print(f"Model name {model_name} is a valid path. Loading model from local path.")
 
         model = AutoModelForCausalLM.from_pretrained(model_name, 
-                                                     # device_map="auto"
+                                                     device_map="auto" # very important for large models!
                                                      )
         tokenizer = AutoTokenizer.from_pretrained(model_name)
 
