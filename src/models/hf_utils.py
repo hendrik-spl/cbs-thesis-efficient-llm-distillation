@@ -98,17 +98,6 @@ class HF_Manager:
 
     @staticmethod
     def load_model(model_name: str, peft: bool):
-        """
-        Loads a model and tokenizer from the Hugging Face model hub.
-
-        Args:
-            model_name (str): The name of the model to load.
-
-        Returns:
-            model (PreTrainedModel): The model loaded from the model hub.
-            tokenizer (PreTrainedTokenizer): The tokenizer loaded from the model hub.
-            peft_config (Optional[LoraConfig]): The PEFT configuration for the model, if it exists.
-        """
         # if model name is not a valid path
         if not os.path.exists(model_name):
             print(f"Model name {model_name} is not a valid path. Checking model mapping.")
@@ -155,41 +144,40 @@ class HF_Manager:
             model.print_trainable_parameters()
         
         return model, tokenizer
-    
+
     @staticmethod
     def load_finetuned_adapter(model_path):
         """
-        Load a fine-tuned PEFT/LoRA adapter model from a local path
+        Load a fine-tuned PEFT/LoRA adapter model from a local path using AutoPeftModelForCausalLM.
         """
-        import json
-        import os
-        from peft import PeftModel
+        from peft import AutoPeftModelForCausalLM
+        from transformers import AutoTokenizer
         import torch
-        
+
         # Step 1: Load the tokenizer from the fine-tuned model
         tokenizer = AutoTokenizer.from_pretrained(model_path)
-        
-        # Step 2: Get the base model name from adapter_config.json
-        with open(os.path.join(model_path, "adapter_config.json"), "r") as f:
-            adapter_config = json.load(f)
-        base_model_name = adapter_config.get("base_model_name_or_path")
-        
-        print(f"Loading base model: {base_model_name}")
-        print(f"Tokenizer vocabulary size: {len(tokenizer)}")
-        
-        # Step 3: Load base model with the EXACT config from the adapter
-        base_model = AutoModelForCausalLM.from_pretrained(base_model_name)
-        
-        # Step 4: CRITICAL - Resize token embeddings BEFORE loading adapter
-        base_model.resize_token_embeddings(len(tokenizer))
-        
-        # Step 5: Set pad token ID if it exists
-        if tokenizer.pad_token_id is not None:
-            base_model.config.pad_token_id = tokenizer.pad_token_id
-            print(f"Set pad_token_id to {tokenizer.pad_token_id}")
-        
-        # Step 6: Now load the adapter
-        print(f"Loading adapter from {model_path}")
-        model = PeftModel.from_pretrained(base_model, model_path)
-        
+
+        # Step 2: Load the fine-tuned adapter model directly
+        print(f"Loading fine-tuned adapter model from {model_path}")
+        model = AutoPeftModelForCausalLM.from_pretrained(model_path)
+
+        if tokenizer.pad_token is None:
+            print(f"Tokenizer {tokenizer.name_or_path} does not have a pad token. Setting a unique pad token.")
+
+            # Add a new special token as pad_token
+            special_tokens_dict = {'pad_token': '[PAD]'}
+            num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
+            print(f"Added {num_added_toks} special tokens to the tokenizer")
+            
+            # Resize the model's token embeddings to account for the new pad token
+            model.resize_token_embeddings(len(tokenizer))
+
+            # Set the pad_token_id to the ID of the new pad token
+            model.config.pad_token_id = tokenizer.pad_token_id
+
+            print(f"tokenizer.pad_token: {tokenizer.pad_token}")
+            print(f"model.config.pad_token_id: {model.config.pad_token_id}")
+            print(f"model.config.eos_token_id: {model.config.eos_token_id}")
+
+
         return model, tokenizer
