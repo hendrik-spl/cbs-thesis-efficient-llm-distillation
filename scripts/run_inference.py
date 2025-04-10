@@ -94,7 +94,7 @@ def main():
 
     wandb_run = wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-inference-v2", tags=tags, config=config, notes=custom_notes)
 
-    if args.use_ollama == "True":
+    if str(args.use_ollama) == "True":
         check_if_ollama_model_exists(args.model_name)
         tracker, num_queries, prompts, true_labels, pred_labels = run_inference_ollama(
             model_name=args.model_name, 
