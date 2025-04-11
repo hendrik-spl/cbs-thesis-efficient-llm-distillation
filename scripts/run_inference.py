@@ -8,11 +8,11 @@ from tqdm import tqdm
 from codecarbon import EmissionsTracker
 
 from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbon
-from src.utils.logs import log_inference_to_wandb
+from src.utils.logs import log_inference_to_wandb, log_gpu_info
 from src.models.ollama_utils import query_ollama_sc, check_if_ollama_model_exists
 from src.models.hf_utils import HF_Manager
 from src.evaluation.evaluate import evaluate_performance
-from src.data.data_manager import SentimentDataManager
+from src.data.data_manager import SentimentDataManager, GoldDataManager
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run inference with LLM models")
@@ -93,6 +93,7 @@ def main():
     custom_notes = ""
 
     wandb_run = wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-inference-v2", tags=tags, config=config, notes=custom_notes)
+    log_gpu_info(wandb_run)
 
     if str(args.use_ollama) == "True":
         check_if_ollama_model_exists(args.model_name)

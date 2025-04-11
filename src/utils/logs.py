@@ -3,6 +3,41 @@ import logging
 
 from src.evaluation.eval_utils import get_duration
 
+def log_gpu_info(wandb_run=None):
+    """Get information about available NVIDIA GPUs."""
+    gpu_count = 0
+    gpu_names = []
+    
+    # Try using PyTorch
+    try:
+        import torch
+        if torch.cuda.is_available():
+            gpu_count = torch.cuda.device_count()
+            gpu_names = [torch.cuda.get_device_name(i) for i in range(gpu_count)]
+    except (ImportError, Exception) as e:
+        print(f"Could not get GPU info via PyTorch: {e}")
+    
+    # Fallback to nvidia-smi if needed
+    if gpu_count == 0:
+        try:
+            import subprocess
+            result = subprocess.check_output("nvidia-smi --query-gpu=name --format=csv,noheader", shell=True)
+            gpu_names = result.decode('utf-8').strip().split('\n')
+            gpu_count = len(gpu_names)
+        except Exception as e:
+            print(f"Could not get GPU info via nvidia-smi: {e}")
+    
+    # Log GPU information to wandb if available
+    if wandb_run:
+        wandb_run.log({"gpu_count": gpu_count, 
+                       "gpu_names": gpu_names if gpu_count > 0 else []
+                       })
+
+    return {
+        "gpu_count": gpu_count,
+        "gpu_names": gpu_names if gpu_count > 0 else []
+    }
+
 def log_inference_to_wandb(wandb: wandb, tracker, num_queries):
     total_duration = get_duration(wandb.name)
     wandb.log({"num_queries": num_queries})

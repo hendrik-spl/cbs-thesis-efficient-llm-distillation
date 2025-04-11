@@ -11,7 +11,7 @@ from transformers import EarlyStoppingCallback
 
 from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbon
 from src.models.hf_utils import HF_Manager
-from src.utils.logs import log_training_to_wandb
+from src.utils.logs import log_training_to_wandb, log_gpu_info
 from datasets import load_from_disk
 from src.data.data_transforms import DataTransforms
 from scripts.training_config import get_sft_config
@@ -105,6 +105,7 @@ def main():
     }
 
     wandb_run = wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-training", tags=tags, config=config)
+    log_gpu_info(wandb_run)
 
     run_training(
         student_model = args.student_model,
