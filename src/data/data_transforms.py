@@ -1,5 +1,5 @@
 import re
-from datasets import DatasetDict, Dataset
+from datasets import DatasetDict, Dataset, concatenate_datasets
 
 from src.utils.setup import ensure_dir_exists
 
@@ -61,7 +61,7 @@ class DataTransforms:
         return example
 
     @staticmethod
-    def split_data(data: Dataset, test_size=0.2, seed=42):
+    def split_data(data, test_size=0.2, seed=42):
         """
         Split the dataset into train, and test sets.
         
@@ -73,6 +73,12 @@ class DataTransforms:
         Returns:
             The split dataset.
         """
+
+        # Handle the case when data is a DatasetDict
+        if isinstance(data, DatasetDict):
+            datasets_list = [dataset for dataset in data.values()]
+            data = concatenate_datasets(datasets_list)
+        
         # Split the data into train (80%) and temp (20%)
         train_temp_split = data.train_test_split(test_size=test_size, seed=seed)
         train_data = train_temp_split['train']

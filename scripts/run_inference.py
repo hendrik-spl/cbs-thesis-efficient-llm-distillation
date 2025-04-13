@@ -13,7 +13,7 @@ from src.models.ollama_utils import query_ollama_sc, check_if_ollama_model_exist
 from src.models.hf_utils import HF_Manager
 from src.models.model_utils import track_samples
 from src.evaluation.evaluate import evaluate_performance
-from src.data.data_manager import SentimentDataManager, GoldDataManager
+from src.data.data_manager import SentimentDataManager, load_data
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run inference with LLM models")
@@ -27,7 +27,7 @@ def parse_arguments():
 def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, run_on_test: bool = False, limit: int = None, shots: int = 5) -> str:
     print(f"Running inference on ollama with model {model_name} on dataset {dataset_name}. Limit: {limit}. Run on test: {run_on_test}. Shots: {shots}.")
 
-    prompts, true_labels, pred_labels = SentimentDataManager.load_data(dataset_name=dataset_name, run_on_test=run_on_test, limit=limit)
+    prompts, true_labels, pred_labels = load_data(dataset_name=dataset_name, run_on_test=run_on_test, limit=limit)
 
     with EmissionsTracker(
         project_name="model-distillation",
@@ -47,7 +47,7 @@ def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, r
 def run_inference_hf(model_name: str, dataset_name: str, wandb_run: wandb, run_on_test: bool = False, limit: int = None, shots: int = 5) -> str:
     print(f"Running inference on HF with model {model_name} on dataset {dataset_name}. Limit: {limit}. Run on test: {run_on_test}. Shots: {shots}.")
 
-    prompts, true_labels, pred_labels = SentimentDataManager.load_data(dataset_name=dataset_name, run_on_test=run_on_test, limit=limit)
+    prompts, true_labels, pred_labels = load_data(dataset_name=dataset_name, run_on_test=run_on_test, limit=limit)
 
     if os.path.exists(os.path.join(model_name, "adapter_config.json")):
         model, tokenizer = HF_Manager.load_finetuned_adapter(model_name)
@@ -63,12 +63,7 @@ def run_inference_hf(model_name: str, dataset_name: str, wandb_run: wandb, run_o
         ) as tracker:
         for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset_name}"):
             try:
-                pred_labels.append(HF_Manager.query_hf_sc(
-                    model=model,
-                    tokenizer=tokenizer,
-                    prompt=prompt,
-                    shots=shots
-                ))
+                pred_labels.append(HF_Manager.query_hf_sc(model=model, tokenizer=tokenizer, dataset_name=dataset_name, prompt=prompt, shots=shots))
             except Exception as e:
                 print(f"Error during inference: {e}")
 

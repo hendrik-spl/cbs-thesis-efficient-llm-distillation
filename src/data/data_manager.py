@@ -1,9 +1,75 @@
+import os
 from datasets import load_dataset, Dataset, DatasetDict, load_from_disk
 
 from src.data.data_transforms import DataTransforms
 from src.utils.setup import ensure_dir_exists
 from src.prompts.sentiment import get_sentiment_prompt
+from src.prompts.gold import get_gold_classification_prompt
 
+def get_samples(dataset_name, limit: int = 5):
+    if "sentiment" in dataset_name:
+        prompts, _, _ = SentimentDataManager.load_data(dataset_name=dataset_name, run_on_test=True, limit=limit)
+    elif "gold" in dataset_name:
+        prompts, _, _ = GoldDataManager.load_data(dataset_name=dataset_name, run_on_test=True, limit=limit)
+    return prompts
+
+def load_data(dataset_name, run_on_test: bool = False, limit: int = None):
+    if "sentiment" in dataset_name:
+        prompts, true_labels, pred_labels = SentimentDataManager.load_data(dataset_name=dataset_name, run_on_test=run_on_test, limit=limit)
+    elif "gold" in dataset_name:
+        prompts, true_labels, pred_labels = GoldDataManager.load_data(dataset_name=dataset_name, run_on_test=run_on_test, limit=limit)
+
+    return prompts, true_labels, pred_labels
+
+class GoldDataManager:
+
+    @staticmethod
+    def load_original_data_hf():
+        """
+        Load the original dataset from Hugging Face.
+        """
+        dataset_path = "data/gold_dataset.csv"
+        if not os.path.exists("data/gold_dataset.csv"):
+            print(f"Could not find the original dataset at data/gold_dataset.csv. Please download it from Kaggle first: https://www.kaggle.com/datasets/daittan/gold-commodity-news-and-dimensions/data.")
+            raise FileNotFoundError("Original dataset not found. Please download it from Kaggle.")
+        else:
+            dataset = load_dataset(path="csv", data_files=dataset_path)
+        return dataset
+    
+    @staticmethod
+    def process_data(data):
+        data = data.shuffle(seed=42)
+        data = data.remove_columns(["Dates", "URL"])
+
+        return data
+    
+    @staticmethod
+    def load_data(dataset_name, run_on_test: bool = False, limit: int = None):
+        dataset = load_from_disk(f"data/{dataset_name}")
+        if run_on_test:
+            data_split = dataset['test']
+        else:
+            data_split = dataset['train']
+        
+        if limit:
+            dataset_size = len(data_split)
+            actual_limit = min(limit, dataset_size)
+            data_split = data_split.select(range(actual_limit))
+
+        news = data_split['News']
+        prompts = [get_gold_classification_prompt(news[i]) for i in range(len(news))]
+
+        label_columns = [col for col in data_split.column_names if col not in ['News', 'URL', 'Dates']]
+        true_labels = []
+
+        for i in range(len(data_split)):  # For each sample, extract the labels into a dictionary
+            sample_labels = {col: data_split[i][col] for col in label_columns}
+            true_labels.append(sample_labels)
+
+        pred_labels = []
+
+        return prompts, true_labels, pred_labels
+        
 class SentimentDataManager:
     """Class for managing sentiment analysis datasets"""
     
