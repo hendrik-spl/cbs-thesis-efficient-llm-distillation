@@ -1,21 +1,28 @@
-import re
-import random
-from collections import Counter
+import weave
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-# from src.models.ollama_utils import check_if_ollama_model_exists, use_ollama, query_ollama_model
-# from src.models.hf_utils import HF_Manager
+from src.data.data_manager import get_samples
+from src.models.hf_utils import HF_Manager
+from src.models.ollama_utils import query_ollama_model
+from src.models.query_utils import query_params_sentiment
 
-query_params_sentiment = {
-    "temperature": 0.3,
-    "seed": None, # Set to None for self-consistency
-    "do_sample": True, # Enable sampling for diversity
-    "top_p": 0.8,
-    "top_k": 40,
-    "max_new_tokens": 50,
-    "custom_max_retries": 3,
-    "custom_retry_delay": 5,
-}
+weave.init("model-inference-v2")
+
+def track_samples(model, dataset_name, use_ollama):
+    sample_prompts = get_samples(dataset_name)
+
+    func = query_ollama_model if use_ollama else HF_Manager.query_model
+
+    responses = []
+    for sample_prompt in sample_prompts:
+        track_sample(func, model, sample_prompt)
+
+    return responses
+
+@weave.op()
+def track_sample(func, model, prompt):
+    response = func(model, prompt, query_params_sentiment)
+    return response
 
 # def query_with_sc(model, prompt, shots, use_ollama):
 #     query_func = query_ollama_model if use_ollama else HF_Manager.query_model
@@ -38,48 +45,6 @@ query_params_sentiment = {
 
 #     majority_vote = find_majority(responses)
 #     return majority_vote
-
-def find_majority(responses):
-    counter = Counter(responses)
-    majority = counter.most_common(1)[0]
-    if majority[1] > len(responses) / 2:
-        return majority[0]
-    else:
-        return random.choice(responses)
-
-def clean_llm_output_sentiment(text: str):
-    """
-    Cleans the output of a language model and extracts sentiment.
-
-    Args:
-        text (str): The text to clean.
-
-    Returns:
-        str: The sentiment label ("negative", "neutral", "positive")
-    """
-    sentiment_options = ["negative", "neutral", "positive"]
-
-    if text is None or text == "":
-        print("Received None text. Defaulting to neutral.")
-        return "neutral"
-    
-    text = text.strip().lower()
-    
-    # look for exact matches
-    if text in sentiment_options:
-        return text
-    
-    words_found = []
-    
-    for word in sentiment_options:
-        words_found.extend([word] * len(re.findall(word, text)))
-    
-    if not words_found:
-        return "neutral"
-        
-    majority = find_majority(words_found)
-    
-    return majority
 
 # def get_model_config(model_name: str):
 #     if use_ollama(model_name):

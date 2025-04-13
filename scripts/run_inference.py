@@ -11,6 +11,7 @@ from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbo
 from src.utils.logs import log_inference_to_wandb, log_gpu_info
 from src.models.ollama_utils import query_ollama_sc, check_if_ollama_model_exists
 from src.models.hf_utils import HF_Manager
+from src.models.model_utils import track_samples
 from src.evaluation.evaluate import evaluate_performance
 from src.data.data_manager import SentimentDataManager, GoldDataManager
 
@@ -112,7 +113,9 @@ def main():
             run_on_test=args.run_on_test,
             wandb_run=wandb_run,
             )
-        
+    
+    track_samples(model=args.model_name, dataset_name=args.dataset, use_ollama=args.use_ollama)
+
     log_inference_to_wandb(wandb_run, tracker, num_queries)
     
     SentimentDataManager.save_model_outputs(prompts, true_labels, pred_labels, args.dataset, args.model_name, wandb_run.name)

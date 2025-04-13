@@ -1,9 +1,10 @@
 import os
 import time
 import ollama
+import weave
 from ollama import chat, ChatResponse
 from src.models.model_mapping import model_mapping
-from src.models.model_utils import query_params_sentiment, clean_llm_output_sentiment, find_majority
+from src.models.query_utils import query_params_sentiment, clean_llm_output_sentiment, find_majority
 
 def query_ollama_sc(model, prompt, shots):
     responses = []

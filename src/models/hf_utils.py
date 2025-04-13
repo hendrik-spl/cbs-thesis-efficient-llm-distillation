@@ -9,7 +9,7 @@ from transformers.generation.stopping_criteria import StoppingCriteriaList
 from src.models.hf_stopping import KeywordStoppingCriteria
 from src.prompts.sentiment import get_sentiment_prompt
 from src.models.model_mapping import model_mapping
-from src.models.model_utils import find_majority, clean_llm_output_sentiment, query_params_sentiment
+from src.models.query_utils import find_majority, clean_llm_output_sentiment, query_params_sentiment
 
 class HF_Manager:
     
@@ -46,7 +46,7 @@ class HF_Manager:
                     "student_completion": completion
                     })
             
-    @staticmethod
+    @staticmethod 
     def query_hf_sc(model, tokenizer, prompt, shots):
         responses = []
         for i in range(shots):

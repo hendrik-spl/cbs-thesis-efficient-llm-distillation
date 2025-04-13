@@ -23,4 +23,5 @@ dependencies = [
     "transformers>=4.49.0",
     "trl>=0.15.2",
     "wandb>=0.19.7",
+    "weave>=0.51.42",
 ]
