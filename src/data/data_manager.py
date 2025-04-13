@@ -24,7 +24,7 @@ def load_data(dataset_name, run_on_test: bool = False, limit: int = None):
 class GoldDataManager:
 
     @staticmethod
-    def load_original_data_hf():
+    def load_original_data():
         """
         Load the original dataset from Hugging Face.
         """

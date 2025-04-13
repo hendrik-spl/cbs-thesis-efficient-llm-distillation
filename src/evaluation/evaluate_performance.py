@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 from datasets import load_from_disk
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, balanced_accuracy_score
 
+def measure_performance_gold(args, wandb_run: wandb):
+    # TODO
+    pass
+
 def measure_performance_sentiment(args, wandb_run: wandb):
     """
     Load the results of a sentiment analysis model and display the confusion matrix.

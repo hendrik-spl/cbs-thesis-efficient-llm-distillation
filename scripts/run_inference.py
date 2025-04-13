@@ -38,7 +38,7 @@ def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, r
         ) as tracker:
         for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset_name}"):
             try:
-                pred_labels.append(query_ollama_sc(model=model_name, prompt=prompt, shots=shots))
+                pred_labels.append(query_ollama_sc(model=model_name, prompt=prompt, dataset_name=dataset_name, shots=shots))
             except Exception as e:
                 print(f"Error during inference: {e}")
 

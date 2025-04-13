@@ -9,12 +9,13 @@ from transformers.generation.stopping_criteria import StoppingCriteriaList
 from src.models.hf_stopping import KeywordStoppingCriteria
 from src.prompts.sentiment import get_sentiment_prompt
 from src.models.model_mapping import model_mapping
-from src.models.query_utils import find_majority, clean_llm_output_sentiment, query_params_sentiment
+from src.models.query_utils import find_majority, clean_llm_output, get_query_params
 
 class HF_Manager:
     
     @staticmethod
-    def predict(model_path, dataset, wandb_run=None, limit=5):
+    def predict(model_path, dataset, dataset_name, wandb_run=None, limit=5):
+        params = get_query_params(dataset_name)
 
         pipe = pipeline(
             model=model_path,
@@ -27,7 +28,7 @@ class HF_Manager:
                 break
             sentence = example["sentence"]
             prompt = get_sentiment_prompt(sentence)
-            completion = pipe(prompt, max_new_tokens=10)
+            completion = pipe(prompt, **params)
             completion = completion[0]["generated_text"]
             label_pos = completion.find("Final Label:")
             if label_pos == -1:
@@ -47,11 +48,12 @@ class HF_Manager:
                     })
             
     @staticmethod 
-    def query_hf_sc(model, tokenizer, prompt, shots):
+    def query_hf_sc(model, tokenizer, dataset_name, prompt, shots):
+        query_params = get_query_params(dataset_name)
         responses = []
         for i in range(shots):
-            response = HF_Manager.query_model(model, tokenizer, prompt, query_params_sentiment)
-            responses.append(clean_llm_output_sentiment(response))
+            response = HF_Manager.query_model(model, tokenizer, prompt, query_params)
+            responses.append(clean_llm_output(dataset_name, response))
         
         return find_majority(responses)
 

@@ -4,13 +4,14 @@ import ollama
 import weave
 from ollama import chat, ChatResponse
 from src.models.model_mapping import model_mapping
-from src.models.query_utils import query_params_sentiment, clean_llm_output_sentiment, find_majority
+from src.models.query_utils import get_query_params, clean_llm_output, find_majority
 
-def query_ollama_sc(model, prompt, shots):
+def query_ollama_sc(model, prompt, dataset_name, shots):
+    query_params = get_query_params(dataset_name)
     responses = []
     for i in range(shots):
-        response = query_ollama_model(model, prompt, query_params_sentiment)
-        responses.append(clean_llm_output_sentiment(response))
+        response = query_ollama_model(model, prompt, query_params)
+        responses.append(clean_llm_output(dataset_name, response))
     
     return find_majority(responses)
 

@@ -36,7 +36,7 @@ def load_gold_from_hf():
         return
 
     # Step 1: Load data
-    data = GoldDataManager.load_original_data_hf()
+    data = GoldDataManager.load_original_data()
     
     # Step 2: Process data
     data = GoldDataManager.process_data(data)
