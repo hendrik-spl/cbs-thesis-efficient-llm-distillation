@@ -55,7 +55,7 @@ class HF_Manager:
             response = HF_Manager.query_model(model, tokenizer, prompt, query_params)
             responses.append(clean_llm_output(dataset_name, response))
         
-        return find_majority(responses)
+        return find_majority(responses, dataset_name)
 
     @staticmethod
     def query_model(model, tokenizer, prompt, params):

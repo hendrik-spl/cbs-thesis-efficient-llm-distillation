@@ -13,7 +13,7 @@ from src.models.ollama_utils import query_ollama_sc, check_if_ollama_model_exist
 from src.models.hf_utils import HF_Manager
 from src.models.model_utils import track_samples
 from src.evaluation.evaluate import evaluate_performance
-from src.data.data_manager import SentimentDataManager, load_data
+from src.data.data_manager import load_data, save_model_outputs
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run inference with LLM models")
@@ -91,6 +91,9 @@ def main():
     wandb_run = wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-inference-v2", tags=tags, config=config, notes=custom_notes)
     log_gpu_info(wandb_run)
 
+    # manual override for shots because it's deemed unnecessary for gold datasets
+    shots = 1 if "gold" in args.dataset else 5
+
     if str(args.use_ollama) == "True":
         check_if_ollama_model_exists(args.model_name)
         tracker, num_queries, prompts, true_labels, pred_labels = run_inference_ollama(
@@ -99,6 +102,7 @@ def main():
             limit=args.limit,
             run_on_test=args.run_on_test,
             wandb_run=wandb_run,
+            shots=shots
             )
     else:
         tracker, num_queries, prompts, true_labels, pred_labels = run_inference_hf(
@@ -107,15 +111,17 @@ def main():
             limit=args.limit,
             run_on_test=args.run_on_test,
             wandb_run=wandb_run,
+            shots=shots
             )
     
     track_samples(model=args.model_name, dataset_name=args.dataset, use_ollama=args.use_ollama)
 
     log_inference_to_wandb(wandb_run, tracker, num_queries)
     
-    SentimentDataManager.save_model_outputs(prompts, true_labels, pred_labels, args.dataset, args.model_name, wandb_run.name)
+    if str(args.run_on_test) == "False":
+        save_model_outputs(prompts, true_labels, pred_labels, args.dataset, args.model_name, wandb_run.name)
     
-    evaluate_performance(args=args, wandb=wandb_run)
+    evaluate_performance(true_labels, pred_labels, args.dataset, wandb_run)
 
 if __name__ == "__main__":
     main()

@@ -21,6 +21,16 @@ def load_data(dataset_name, run_on_test: bool = False, limit: int = None):
 
     return prompts, true_labels, pred_labels
 
+def save_model_outputs(prompts, true_labels, pred_labels, dataset_name, model_name, wandb_run_name):
+    data = {
+        "prompt": prompts,
+        "true_label": true_labels,
+        "completion": pred_labels
+    }
+    dataset = Dataset.from_dict(data)
+    output_dir = f"distillation-data/{dataset_name}/{model_name}/{wandb_run_name}"
+    dataset.save_to_disk(ensure_dir_exists(output_dir))
+
 class GoldDataManager:
 
     @staticmethod
@@ -59,17 +69,34 @@ class GoldDataManager:
         news = data_split['News']
         prompts = [get_gold_classification_prompt(news[i]) for i in range(len(news))]
 
+        column_names_mapping = {
+            'Price or Not': 'price_or_not',
+            'Direction Up': 'price_up',
+            'Direction Constant': 'price_const_stable',
+            'Direction Down': 'price_down',
+            'PastPrice': 'past_price_info',
+            'FuturePrice': 'future_price_info',
+            'PastNews': 'past_gen_info',
+            'FutureNews': 'future_gen_info',
+            'Asset Comparision': 'asset_comparison'
+        }
+
         label_columns = [col for col in data_split.column_names if col not in ['News', 'URL', 'Dates']]
         true_labels = []
 
         for i in range(len(data_split)):  # For each sample, extract the labels into a dictionary
-            sample_labels = {col: data_split[i][col] for col in label_columns}
+            sample_labels = {}
+            for col in label_columns:
+                if col in column_names_mapping:
+                    sample_labels[column_names_mapping[col]] = data_split[i][col]
+                else:
+                    sample_labels[col] = data_split[i][col]
             true_labels.append(sample_labels)
 
         pred_labels = []
 
         return prompts, true_labels, pred_labels
-        
+            
 class SentimentDataManager:
     """Class for managing sentiment analysis datasets"""
     
@@ -134,14 +161,3 @@ class SentimentDataManager:
         pred_labels = []
 
         return prompts, true_labels, pred_labels
-    
-    @staticmethod
-    def save_model_outputs(prompts, true_labels, pred_labels, dataset_name, model_name, run_name):
-        data = {
-            "prompt": prompts,
-            "true_label": true_labels,
-            "completion": pred_labels
-        }
-        dataset = Dataset.from_dict(data)
-        output_dir = f"distillation-data/{dataset_name}/{model_name}/{run_name}"
-        dataset.save_to_disk(ensure_dir_exists(output_dir))

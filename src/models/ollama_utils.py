@@ -13,7 +13,7 @@ def query_ollama_sc(model, prompt, dataset_name, shots):
         response = query_ollama_model(model, prompt, query_params)
         responses.append(clean_llm_output(dataset_name, response))
     
-    return find_majority(responses)
+    return find_majority(responses, dataset_name)
 
 def query_ollama_model(model, prompt, params):
     """
