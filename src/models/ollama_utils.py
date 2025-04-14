@@ -5,6 +5,24 @@ import weave
 from ollama import chat, ChatResponse
 from src.models.model_mapping import model_mapping
 from src.models.query_utils import get_query_params, clean_llm_output, find_majority
+from src.data.data_manager import get_samples
+
+weave.init("model-inference-v2")
+
+def track_samples_ollama(model, dataset_name):
+    sample_prompts = get_samples(dataset_name)
+    query_params = get_query_params(dataset_name)
+    
+    responses = []
+    for sample_prompt in sample_prompts:
+        responses.append(track_sample_ollama(model, sample_prompt, query_params))
+    
+    return responses
+
+@weave.op()
+def track_sample_ollama(model, prompt, query_params):
+    response = query_ollama_model(model, prompt, query_params)
+    return response
 
 def query_ollama_sc(model, prompt, dataset_name, shots):
     query_params = get_query_params(dataset_name)

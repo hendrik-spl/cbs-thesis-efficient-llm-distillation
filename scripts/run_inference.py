@@ -9,7 +9,7 @@ from codecarbon import EmissionsTracker
 
 from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbon
 from src.utils.logs import log_inference_to_wandb, log_gpu_info
-from src.models.ollama_utils import query_ollama_sc, check_if_ollama_model_exists
+from src.models.ollama_utils import query_ollama_sc, check_if_ollama_model_exists, track_samples_ollama
 from src.models.hf_utils import HF_Manager
 from src.models.model_utils import track_samples
 from src.evaluation.evaluate import evaluate_performance
@@ -42,6 +42,8 @@ def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, r
             except Exception as e:
                 print(f"Error during inference: {e}")
 
+    track_samples_ollama(model_name, dataset_name)
+
     return tracker, len(prompts) * shots, prompts, true_labels, pred_labels
 
 def run_inference_hf(model_name: str, dataset_name: str, wandb_run: wandb, run_on_test: bool = False, limit: int = None, shots: int = 5) -> str:
@@ -66,6 +68,8 @@ def run_inference_hf(model_name: str, dataset_name: str, wandb_run: wandb, run_o
                 pred_labels.append(HF_Manager.query_hf_sc(model=model, tokenizer=tokenizer, dataset_name=dataset_name, prompt=prompt, shots=shots))
             except Exception as e:
                 print(f"Error during inference: {e}")
+
+    HF_Manager.track_samples_hf(model, tokenizer, dataset_name)
 
     return tracker, len(prompts) * shots, prompts, true_labels, pred_labels
 
@@ -114,8 +118,6 @@ def main():
             shots=shots
             )
     
-    track_samples(model=args.model_name, dataset_name=args.dataset, use_ollama=args.use_ollama)
-
     log_inference_to_wandb(wandb_run, tracker, num_queries)
     
     if str(args.run_on_test) == "False":

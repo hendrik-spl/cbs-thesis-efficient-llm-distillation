@@ -1,5 +1,6 @@
 import os
 import torch
+import weave
 from tqdm import tqdm
 from transformers import pipeline
 from peft import LoraConfig, TaskType, get_peft_model
@@ -10,6 +11,7 @@ from src.models.hf_stopping import KeywordStoppingCriteria
 from src.prompts.sentiment import get_sentiment_prompt
 from src.models.model_mapping import model_mapping
 from src.models.query_utils import find_majority, clean_llm_output, get_query_params
+from src.data.data_manager import get_samples
 
 class HF_Manager:
     
@@ -182,3 +184,21 @@ class HF_Manager:
 
 
         return model, tokenizer
+    
+    @staticmethod
+    def track_samples_hf(model, tokenizer, dataset_name):
+        weave.init("model-inference-v2")
+        sample_prompts = get_samples(dataset_name)
+        query_params = get_query_params(dataset_name)
+
+        responses = []
+        for sample_prompt in sample_prompts:
+            responses.append(HF_Manager.track_sample_hf(model, tokenizer, sample_prompt, query_params))
+
+        return responses
+    
+    @weave.op()
+    @staticmethod
+    def track_sample_hf(model, tokenizer, prompt, query_params):
+        response = HF_Manager.query_model(model, tokenizer, prompt, query_params)
+        return response
