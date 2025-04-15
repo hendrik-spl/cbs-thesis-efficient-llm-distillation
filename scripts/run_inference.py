@@ -40,7 +40,11 @@ def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, r
             except Exception as e:
                 print(f"Error during inference: {e}")
 
-    track_samples_ollama(model_name, dataset_name)
+    try:
+        track_samples_ollama(model_name, dataset_name)
+    except Exception as e:
+        print(f"Error during tracking samples: {e}")
+        return tracker, len(prompts) * shots, prompts, true_labels, pred_labels
 
     return tracker, len(prompts) * shots, prompts, true_labels, pred_labels
 
@@ -65,7 +69,11 @@ def run_inference_hf(model_name: str, dataset_name: str, wandb_run: wandb, run_o
             except Exception as e:
                 print(f"Error during inference: {e}")
 
-    HF_Manager.track_samples_hf(model, tokenizer, dataset_name)
+    try:
+        HF_Manager.track_samples_hf(model, tokenizer, dataset_name)
+    except Exception as e:
+        print(f"Error during tracking samples: {e}")
+        return tracker, len(prompts) * shots, prompts, true_labels, pred_labels
 
     return tracker, len(prompts) * shots, prompts, true_labels, pred_labels
 
