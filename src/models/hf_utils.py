@@ -91,6 +91,8 @@ class HF_Manager:
             stopping_criteria = StoppingCriteriaList([
                 KeywordStoppingCriteria(tokenizer, stop_words, prompt_length)
             ])
+        else:
+            stopping_criteria = None
 
         # Generate a response
         with torch.no_grad():
@@ -100,8 +102,10 @@ class HF_Manager:
                                     top_p=params.get("top_p"),
                                     top_k=params.get("top_k"),
                                     max_new_tokens=params.get("max_new_tokens"),
-                                    pad_token_id=tokenizer.eos_token_id,
-                                    stopping_criteria=stopping_criteria if "sentiment" in dataset_name else None,
+                                    # pad_token_id=tokenizer.eos_token_id, # previous implementation which caused issues. It doesn't match the setup in load_model
+                                    pad_token_id=tokenizer.pad_token_id,
+                                    eos_token_id=tokenizer.eos_token_id,
+                                    stopping_criteria=stopping_criteria,
                                     )
 
         # Decode ONLY the generated tokens (exclude the input prompt tokens)
