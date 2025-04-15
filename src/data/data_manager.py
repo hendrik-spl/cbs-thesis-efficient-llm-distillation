@@ -1,10 +1,11 @@
 import os
-from datasets import load_dataset, Dataset, DatasetDict, load_from_disk
+from datasets import load_dataset, Dataset, load_from_disk
 
 from src.data.data_transforms import DataTransforms
 from src.utils.setup import ensure_dir_exists
 from src.prompts.sentiment import get_sentiment_prompt
 from src.prompts.gold import get_gold_classification_prompt
+from src.prompts.summary import get_summmary_prompt
 
 def get_samples(dataset_name, limit: int = 5):
     if "sentiment" in dataset_name:
@@ -18,6 +19,8 @@ def load_data(dataset_name, run_on_test: bool = False, limit: int = None):
         prompts, true_labels, pred_labels = SentimentDataManager.load_data(dataset_name=dataset_name, run_on_test=run_on_test, limit=limit)
     elif "gold" in dataset_name:
         prompts, true_labels, pred_labels = GoldDataManager.load_data(dataset_name=dataset_name, run_on_test=run_on_test, limit=limit)
+    elif "summary" in dataset_name:
+        prompts, true_labels, pred_labels = SummaryManager.load_data(dataset_name=dataset_name, run_on_test=run_on_test, limit=limit)
 
     return prompts, true_labels, pred_labels
 
@@ -52,8 +55,7 @@ class SummaryManager:
             data_split = data_split.select(range(actual_limit))
 
         texts = data_split['text']
-        # TODO: Add a prompt for the summary task
-        prompts = data_split['text']
+        prompts = [get_summmary_prompt(texts[i]) for i in range(len(texts))]
         true_labels = data_split['summary']
         pred_labels = []
 
