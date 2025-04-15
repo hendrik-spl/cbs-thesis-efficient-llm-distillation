@@ -19,6 +19,7 @@ def parse_arguments():
     parser.add_argument("--model_name", type=str, required=True, help="Name of the model to load (e.g., 'llama3.2:1b')")
     parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment:50agree')")
     parser.add_argument("--limit", type=int, help="Limit the number of samples to process (default: 10)")
+    parser.add_argument("--shots", type=int, default=5, help="Number of shots for the model (default: 5)")
     parser.add_argument("--run_on_test", action="store_true", help="Whether to run on the test set. If not specified, runs on the training set.")
     parser.add_argument("--use_ollama", action="store_true", help="Whether to use Ollama. If not specified, uses HF to run the model.")
     return parser.parse_args()
@@ -81,8 +82,9 @@ def main():
         "model_name": args.model_name,
         "dataset": args.dataset,
         "limit": args.limit,
+        "shots": args.shots,
         "run_on_test": args.run_on_test,
-        "use_ollama": str(args.use_ollama)
+        "use_ollama": str(args.use_ollama),
     }
 
     custom_notes = ""
@@ -96,21 +98,23 @@ def main():
             model_name=args.model_name, 
             dataset_name=args.dataset,
             limit=args.limit,
+            shots=args.shots,
             run_on_test=args.run_on_test,
-            wandb_run=wandb_run
+            wandb_run=wandb_run,
             )
     else:
         tracker, num_queries, prompts, true_labels, pred_labels = run_inference_hf(
             model_name=args.model_name, 
             dataset_name=args.dataset,
             limit=args.limit,
+            shots=args.shots,
             run_on_test=args.run_on_test,
-            wandb_run=wandb_run
+            wandb_run=wandb_run,
             )
     
     log_inference_to_wandb(wandb_run, tracker, num_queries)
     
-    if str(args.run_on_test) == "False":
+    if str(args.run_on_test) != "True":
         save_model_outputs(prompts, true_labels, pred_labels, args.dataset, args.model_name, wandb_run.name)
     
     evaluate_performance(true_labels, pred_labels, args.dataset, wandb_run)
