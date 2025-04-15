@@ -29,16 +29,14 @@ def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, r
 
     prompts, true_labels, pred_labels = load_data(dataset_name=dataset_name, run_on_test=run_on_test, limit=limit)
 
-    with EmissionsTracker(
-        project_name="model-distillation",
-        experiment_id=wandb_run.name,
-        tracking_mode="machine",
-        output_dir=ensure_dir_exists("results/metrics/emissions"),
-        log_level="warning"
-        ) as tracker:
+    with EmissionsTracker(project_name="model-distillation", experiment_id=wandb_run.name, tracking_mode="machine", output_dir=ensure_dir_exists("results/metrics/emissions"), log_level="warning") as tracker:
+        verbose = False
+        verbose_counter = 0
         for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset_name}"):
+            verbose = verbose_counter < 5
             try:
-                pred_labels.append(query_ollama_sc(model=model_name, prompt=prompt, dataset_name=dataset_name, shots=shots))
+                pred_labels.append(query_ollama_sc(model=model_name, prompt=prompt, dataset_name=dataset_name, shots=shots, verbose=verbose))
+                verbose_counter += 1
             except Exception as e:
                 print(f"Error during inference: {e}")
 
@@ -56,16 +54,14 @@ def run_inference_hf(model_name: str, dataset_name: str, wandb_run: wandb, run_o
     else:
         model, tokenizer = HF_Manager.load_model(model_name, peft=False)
 
-    with EmissionsTracker(
-        project_name="model-distillation",
-        experiment_id=wandb_run.name,
-        tracking_mode="machine",
-        output_dir=ensure_dir_exists("results/metrics/emissions"),
-        log_level="warning"
-        ) as tracker:
+    with EmissionsTracker(project_name="model-distillation", experiment_id=wandb_run.name, tracking_mode="machine", output_dir=ensure_dir_exists("results/metrics/emissions"), log_level="warning") as tracker:
+        verbose = False
+        verbose_counter = 0
         for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset_name}"):
+            verbose = verbose_counter < 5
             try:
-                pred_labels.append(HF_Manager.query_hf_sc(model=model, tokenizer=tokenizer, dataset_name=dataset_name, prompt=prompt, shots=shots))
+                pred_labels.append(HF_Manager.query_hf_sc(model=model, tokenizer=tokenizer, dataset_name=dataset_name, prompt=prompt, shots=shots, verbose=verbose))
+                verbose_counter += 1
             except Exception as e:
                 print(f"Error during inference: {e}")
 
