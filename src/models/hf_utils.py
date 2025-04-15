@@ -15,6 +15,7 @@ from src.data.data_manager import get_samples
 
 class HF_Manager:
     
+    @weave.op()
     @staticmethod
     def predict(model_path, dataset, dataset_name, wandb_run=None, limit=5):
         params = get_query_params(dataset_name)
