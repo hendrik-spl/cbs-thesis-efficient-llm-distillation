@@ -204,12 +204,12 @@ class HF_Manager:
 
         responses = []
         for sample_prompt in sample_prompts:
-            responses.append(HF_Manager.track_sample_hf(model, tokenizer, sample_prompt, query_params))
+            responses.append(HF_Manager.track_sample_hf(model=model, tokenizer=tokenizer, dataset_name=dataset_name, prompt=sample_prompt, query_params=query_params))
 
         return responses
     
     @weave.op()
     @staticmethod
-    def track_sample_hf(model, tokenizer, prompt, query_params):
-        response = HF_Manager.query_model(model, tokenizer, prompt, query_params)
+    def track_sample_hf(model, tokenizer, dataset_name, prompt, query_params):
+        response = HF_Manager.query_model(model=model, tokenizer=tokenizer, dataset_name=dataset_name, prompt=prompt, params=query_params)
         return response
