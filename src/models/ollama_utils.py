@@ -32,7 +32,6 @@ def query_ollama_sc(model, prompt, dataset_name, shots, verbose=False):
         response = query_ollama_model(model, prompt, query_params)
         responses.append(clean_llm_output(dataset_name, response))
         if verbose:
-            print(f"Prompt: {prompt}")
             print(f"Response: {response}")
             print(f"Cleaned Response: {clean_llm_output(dataset_name, response)}")
             print(f"-----------")

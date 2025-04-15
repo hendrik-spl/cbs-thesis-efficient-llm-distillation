@@ -58,7 +58,6 @@ class HF_Manager:
             response = HF_Manager.query_model(model, tokenizer, dataset_name, prompt, query_params)
             responses.append(clean_llm_output(dataset_name, response))
             if verbose:
-                print(f"Prompt: {prompt}")
                 print(f"Response: {response}")
                 print(f"Cleaned Response: {clean_llm_output(dataset_name, response)}")
                 print(f"-----------")

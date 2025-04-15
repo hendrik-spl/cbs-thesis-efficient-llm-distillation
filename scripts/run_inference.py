@@ -32,7 +32,7 @@ def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, r
         verbose = False
         verbose_counter = 0
         for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset_name}"):
-            verbose = verbose_counter < 5
+            verbose = verbose_counter < 2
             try:
                 pred_labels.append(query_ollama_sc(model=model_name, prompt=prompt, dataset_name=dataset_name, shots=shots, verbose=verbose))
                 verbose_counter += 1
@@ -57,7 +57,7 @@ def run_inference_hf(model_name: str, dataset_name: str, wandb_run: wandb, run_o
         verbose = False
         verbose_counter = 0
         for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset_name}"):
-            verbose = verbose_counter < 5
+            verbose = verbose_counter < 2
             try:
                 pred_labels.append(HF_Manager.query_hf_sc(model=model, tokenizer=tokenizer, dataset_name=dataset_name, prompt=prompt, shots=shots, verbose=verbose))
                 verbose_counter += 1
