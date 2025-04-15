@@ -35,14 +35,57 @@ def get_query_params(dataset_name: str):
 
 def find_majority(responses, dataset_name):
     if "sentiment" in dataset_name: # list of strings
-        counter = Counter(responses)
-        majority = counter.most_common(1)[0]
-        if majority[1] > len(responses) / 2:
-            return majority[0]
-        else:
-            return random.choice(responses)
+        return find_majority_str(responses)
     elif "gold" in dataset_name: # list of dicts
-        return responses[0]  # Assuming we only use one shot / no self-consistency for gold
+        return find_majority_dict(responses)
+
+def find_majority_str(responses):
+    """
+    Find the majority value in a list of strings.
+
+    Args:
+        responses (list): List of strings to analyze.
+
+    Returns:
+        str: The majority string.
+    """
+    counter = Counter(responses)
+    majority = counter.most_common(1)[0]
+    if majority[1] > len(responses) / 2:
+        return majority[0]
+    else:
+        return random.choice(responses)
+
+def find_majority_dict(responses):
+    """
+    Find the majority value in each key of a list of dictionaries.
+
+    Args:
+        responses (list): List of dictionaries to analyze.
+
+    Returns:
+        dict: Dictionary with the values of the majority for each key.
+    """
+    # Initialize a dictionary to hold the majority values
+    majority_dict = {}
+    
+    # Iterate through each dictionary in the list
+    for response in responses:
+        for key, value in response.items():
+            if key not in majority_dict:
+                majority_dict[key] = []
+            majority_dict[key].append(value)
+    
+    # Find the majority for each key
+    for key, values in majority_dict.items():
+        counter = Counter(values)
+        majority = counter.most_common(1)[0]
+        if majority[1] > len(values) / 2:
+            majority_dict[key] = majority[0]
+        else:
+            majority_dict[key] = random.choice(values)
+    
+    return majority_dict
 
 def clean_llm_output(dataset_name, text: str):
     if "sentiment" in dataset_name:

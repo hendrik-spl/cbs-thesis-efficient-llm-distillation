@@ -91,9 +91,6 @@ def main():
     wandb_run = wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-inference-v2", tags=tags, config=config, notes=custom_notes)
     log_gpu_info(wandb_run)
 
-    # manual override for shots because it's deemed unnecessary for gold datasets
-    shots = 1 if "gold" in args.dataset else 5
-
     if str(args.use_ollama) == "True":
         check_if_ollama_model_exists(args.model_name)
         tracker, num_queries, prompts, true_labels, pred_labels = run_inference_ollama(
@@ -101,8 +98,7 @@ def main():
             dataset_name=args.dataset,
             limit=args.limit,
             run_on_test=args.run_on_test,
-            wandb_run=wandb_run,
-            shots=shots
+            wandb_run=wandb_run
             )
     else:
         tracker, num_queries, prompts, true_labels, pred_labels = run_inference_hf(
@@ -110,8 +106,7 @@ def main():
             dataset_name=args.dataset,
             limit=args.limit,
             run_on_test=args.run_on_test,
-            wandb_run=wandb_run,
-            shots=shots
+            wandb_run=wandb_run
             )
     
     log_inference_to_wandb(wandb_run, tracker, num_queries)
