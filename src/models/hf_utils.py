@@ -53,14 +53,22 @@ class HF_Manager:
     def query_hf_sc(model, tokenizer, dataset_name, prompt, shots):
         query_params = get_query_params(dataset_name)
         responses = []
+        print_counter = 0
+        
         for i in range(shots):
-            response = HF_Manager.query_model(model, tokenizer, prompt, query_params)
+            response = HF_Manager.query_model(model, tokenizer, dataset_name, prompt, query_params)
             responses.append(clean_llm_output(dataset_name, response))
+            if print_counter < 10:
+                print(f"Prompt: {prompt}")
+                print(f"Response: {response}")
+                print(f"Cleaned Response: {clean_llm_output(dataset_name, response)}")
+                print(f"-----------")
+                print_counter += 1
         
         return find_majority(responses, dataset_name)
 
     @staticmethod
-    def query_model(model, tokenizer, prompt, params):
+    def query_model(model, tokenizer, dataset_name, prompt, params):
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
         # Tokenize the input prompt and move to the appropriate device
@@ -78,10 +86,11 @@ class HF_Manager:
         prompt_length = inputs["input_ids"].shape[1]
 
         # Create stopping criteria - stop on seeing these keywords or patterns
-        stop_words = ["text:"]
-        stopping_criteria = StoppingCriteriaList([
-            KeywordStoppingCriteria(tokenizer, stop_words, prompt_length)
-        ])
+        if "sentiment" in dataset_name:
+            stop_words = ["text:"]
+            stopping_criteria = StoppingCriteriaList([
+                KeywordStoppingCriteria(tokenizer, stop_words, prompt_length)
+            ])
 
         # Generate a response
         with torch.no_grad():
@@ -92,7 +101,7 @@ class HF_Manager:
                                     top_k=params.get("top_k"),
                                     max_new_tokens=params.get("max_new_tokens"),
                                     pad_token_id=tokenizer.eos_token_id,
-                                    stopping_criteria=stopping_criteria,
+                                    stopping_criteria=stopping_criteria if "sentiment" in dataset_name else None,
                                     )
 
         # Decode ONLY the generated tokens (exclude the input prompt tokens)

@@ -27,9 +27,17 @@ def track_sample_ollama(model, prompt, query_params):
 def query_ollama_sc(model, prompt, dataset_name, shots):
     query_params = get_query_params(dataset_name)
     responses = []
+    print_counter = 0
+    
     for i in range(shots):
         response = query_ollama_model(model, prompt, query_params)
         responses.append(clean_llm_output(dataset_name, response))
+        if print_counter < 10:
+            print(f"Prompt: {prompt}")
+            print(f"Response: {response}")
+            print(f"Cleaned Response: {clean_llm_output(dataset_name, response)}")
+            print(f"-----------")
+            print_counter += 1
     
     return find_majority(responses, dataset_name)
 
