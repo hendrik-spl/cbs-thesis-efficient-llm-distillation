@@ -31,6 +31,34 @@ def save_model_outputs(prompts, true_labels, pred_labels, dataset_name, model_na
     output_dir = f"distillation-data/{dataset_name}/{model_name}/{wandb_run_name}"
     dataset.save_to_disk(ensure_dir_exists(output_dir))
 
+class SummaryManager:
+
+    @staticmethod
+    def load_original_data():
+        dataset = load_dataset(path="mrSoul7766/ECTSum", trust_remote_code=True)
+        return dataset
+    
+    @staticmethod
+    def load_data(dataset_name, run_on_test = False, limit = None):
+        dataset = load_from_disk(f"data/summary")
+        if run_on_test:
+            data_split = dataset['test']
+        else:
+            data_split = dataset['train']
+
+        if limit:
+            dataset_size = len(data_split)
+            actual_limit = min(limit, dataset_size)
+            data_split = data_split.select(range(actual_limit))
+
+        texts = data_split['text']
+        # TODO: Add a prompt for the summary task
+        prompts = data_split['text']
+        true_labels = data_split['summary']
+        pred_labels = []
+
+        return prompts, true_labels, pred_labels
+
 class GoldDataManager:
 
     @staticmethod
