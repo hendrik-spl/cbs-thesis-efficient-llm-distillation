@@ -11,7 +11,6 @@ from src.utils.setup import ensure_dir_exists, set_seed, ensure_cpu_in_codecarbo
 from src.utils.logs import log_inference_to_wandb, log_gpu_info
 from src.models.ollama_utils import query_ollama_sc, check_if_ollama_model_exists, track_samples_ollama
 from src.models.hf_utils import HF_Manager
-from src.models.model_utils import track_samples
 from src.evaluation.evaluate import evaluate_performance
 from src.data.data_manager import load_data, save_model_outputs
 
