@@ -15,9 +15,6 @@ def measure_performance_gold_inference(true_labels: List[Dict[str, int]], pred_l
     Returns:
         Dictionary containing performance metrics
     """
-    print(true_labels)
-    print(pred_labels)
-
     # Determine categories if not provided
     categories = list(true_labels[0].keys())
     
