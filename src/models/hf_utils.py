@@ -208,15 +208,16 @@ class HF_Manager:
         weave.init("model-inference-v2")
         sample_prompts = get_samples(dataset_name)
         query_params = get_query_params(dataset_name)
+        model_name = model.config._name_or_path # needed to see natural model name in wandb weave
 
         responses = []
         for sample_prompt in sample_prompts:
-            responses.append(HF_Manager.track_sample_hf(model=model, tokenizer=tokenizer, dataset_name=dataset_name, prompt=sample_prompt, query_params=query_params))
+            responses.append(HF_Manager.track_sample_hf(model=model, tokenizer=tokenizer, dataset_name=dataset_name, model_name=model_name, prompt=sample_prompt, query_params=query_params))
 
         return responses
     
     @weave.op()
     @staticmethod
-    def track_sample_hf(model, tokenizer, dataset_name, prompt, query_params):
+    def track_sample_hf(model, tokenizer, dataset_name, model_name, prompt, query_params):
         response = HF_Manager.query_model(model=model, tokenizer=tokenizer, dataset_name=dataset_name, prompt=prompt, params=query_params)
         return response
