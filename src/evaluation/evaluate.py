@@ -1,5 +1,6 @@
 from src.evaluation.sentiment_evals import measure_performance_sentiment_inference
 from src.evaluation.gold_evals import measure_performance_gold_inference
+from src.evaluation.summary_evals import measure_performance_summary_inference
 
 def evaluate_performance(true_labels, pred_labels, dataset_name, wandb):
     """
@@ -22,6 +23,12 @@ def evaluate_performance(true_labels, pred_labels, dataset_name, wandb):
         )
     elif "gold" in dataset_name:
         measure_performance_gold_inference(
+            true_labels=true_labels,
+            pred_labels=pred_labels,
+            wandb_run=wandb
+        )
+    elif "summary" in dataset_name:
+        measure_performance_summary_inference(
             true_labels=true_labels,
             pred_labels=pred_labels,
             wandb_run=wandb

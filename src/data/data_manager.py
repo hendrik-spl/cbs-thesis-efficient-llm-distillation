@@ -13,6 +13,8 @@ def get_samples(dataset_name, limit: int = 5):
         prompts, _, _ = SentimentDataManager.load_data(dataset_name=dataset_name, run_on_test=True, limit=limit)
     elif "gold" in dataset_name:
         prompts, _, _ = GoldDataManager.load_data(dataset_name=dataset_name, run_on_test=True, limit=limit)
+    elif "summary" in dataset_name:
+        prompts, _, _ = SummaryManager.load_data(dataset_name=dataset_name, run_on_test=True, limit=limit)
     return prompts
 
 def load_data(dataset_name, run_on_test: bool = False, limit: int = None):
@@ -28,12 +30,12 @@ def load_data(dataset_name, run_on_test: bool = False, limit: int = None):
 def save_model_outputs(prompts, true_labels, pred_labels, dataset_name, model_name, wandb_run_name):
     # convert pred_labels from list of dicts to list of strings so that it can be used as input for training
     if isinstance(pred_labels[0], dict):
-        pred_labels_strings = [json.dumps(pred_label, indent=None, separators=(',', ':')) for pred_label in pred_labels]
+        pred_labels = [json.dumps(pred_label, indent=None, separators=(',', ':')) for pred_label in pred_labels]
 
     data = {
         "prompt": prompts,
         "true_label": true_labels,
-        "completion": pred_labels_strings
+        "completion": pred_labels
     }
     dataset = Dataset.from_dict(data)
     output_dir = f"distillation-data/{dataset_name}/{model_name}/{wandb_run_name}"
@@ -45,6 +47,13 @@ class SummaryManager:
     def load_original_data():
         dataset = load_dataset(path="mrSoul7766/ECTSum", trust_remote_code=True)
         return dataset
+    
+    @staticmethod
+    def process_data(data):
+        data['train'] = data['train'].shuffle(seed=42)
+        data['test'] = data['test'].shuffle(seed=42)
+
+        return data
     
     @staticmethod
     def load_data(dataset_name, run_on_test = False, limit = None):

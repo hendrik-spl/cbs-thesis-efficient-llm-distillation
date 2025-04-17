@@ -25,11 +25,24 @@ query_params_gold = {
     "custom_retry_delay": 5,
 }
 
+query_params_summary = {
+    "temperature": 0.3,
+    "seed": None, # Set to None for self-consistency
+    "do_sample": True, # Enable sampling for diversity
+    "top_p": 0.8,
+    "top_k": 40,
+    "max_new_tokens": 384,
+    "custom_max_retries": 3,
+    "custom_retry_delay": 5,
+}
+
 def get_query_params(dataset_name: str):
     if "sentiment" in dataset_name:
         return query_params_sentiment
     elif "gold" in dataset_name:
         return query_params_gold
+    elif "summary" in dataset_name:
+        return query_params_summary
     else:
         raise ValueError(f"Unknown dataset: {dataset_name}")
 
@@ -38,6 +51,8 @@ def find_majority(responses, dataset_name):
         return find_majority_str(responses)
     elif "gold" in dataset_name: # list of dicts
         return find_majority_dict(responses)
+    elif "summary" in dataset_name: # list of strings
+        return find_majority_str(responses)
 
 def find_majority_str(responses):
     """
@@ -92,6 +107,11 @@ def clean_llm_output(dataset_name, text: str):
         return clean_llm_output_sentiment(text)
     elif "gold" in dataset_name:
         return clean_llm_output_gold(text)
+    elif "summary" in dataset_name:
+        return clean_llm_output_summary(text)
+
+def clean_llm_output_summary(text: str):
+    return text.strip().lower()
 
 def clean_llm_output_sentiment(text: str):
     """

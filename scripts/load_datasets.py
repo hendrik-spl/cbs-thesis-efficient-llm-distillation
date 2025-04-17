@@ -61,7 +61,7 @@ def load_summary():
     data = SummaryManager.load_original_data()
 
     # Step 2: Process data
-    # Optional so far...
+    data = SummaryManager.process_data(data)
 
     # Step 3: Save data
     DataTransforms.save_data(data, dataset_path)

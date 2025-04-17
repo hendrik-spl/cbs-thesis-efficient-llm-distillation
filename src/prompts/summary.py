@@ -13,5 +13,4 @@ Base your summary solely on the TEXT provided and do not add any external contex
 Your TEXT to analyze:
 TEXT: {text}
 
-Bullet-point Summary:
-"""
+BULLET-POINT SUMMARY: """
