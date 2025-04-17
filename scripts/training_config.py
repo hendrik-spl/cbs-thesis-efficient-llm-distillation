@@ -60,8 +60,8 @@ def get_dataset_specific_params(dataset_name):
     params = {}
     if "sentiment" in dataset_name:
         params["max_seq_length"] = 384
-        params["num_train_epochs"] = 5
+        params["num_train_epochs"] = 3
     if "gold" in dataset_name:
         params["max_seq_length"] = 768
-        params["num_train_epochs"] = 5
+        params["num_train_epochs"] = 3
     return params
