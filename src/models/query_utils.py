@@ -31,7 +31,7 @@ query_params_summary = {
     "do_sample": True, # Enable sampling for diversity
     "top_p": 0.8,
     "top_k": 40,
-    "max_new_tokens": 256,
+    "max_new_tokens": 192,
     "custom_max_retries": 3,
     "custom_retry_delay": 5,
 }
