@@ -1,4 +1,5 @@
 import os
+import json
 from datasets import load_dataset, Dataset, load_from_disk
 
 from src.data.data_transforms import DataTransforms
@@ -25,10 +26,14 @@ def load_data(dataset_name, run_on_test: bool = False, limit: int = None):
     return prompts, true_labels, pred_labels
 
 def save_model_outputs(prompts, true_labels, pred_labels, dataset_name, model_name, wandb_run_name):
+    # convert pred_labels from list of dicts to list of strings so that it can be used as input for training
+    if isinstance(pred_labels[0], dict):
+        pred_labels_strings = [json.dumps(pred_label, indent=None, separators=(',', ':')) for pred_label in pred_labels]
+
     data = {
         "prompt": prompts,
         "true_label": true_labels,
-        "completion": pred_labels
+        "completion": pred_labels_strings
     }
     dataset = Dataset.from_dict(data)
     output_dir = f"distillation-data/{dataset_name}/{model_name}/{wandb_run_name}"
