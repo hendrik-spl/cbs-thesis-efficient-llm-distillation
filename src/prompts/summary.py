@@ -1,4 +1,4 @@
-def get_summmary_prompt(text, version="long"):
+def get_summmary_prompt(text, version="reversed"):
     if version == "short":
         return short_summary_prompt(text)
     elif version == "long":
@@ -21,7 +21,7 @@ Base your summary solely on the TEXT provided and do not add any external contex
 Your TEXT to analyze:
 TEXT: {text}
 
-FINAL SUMMARY: """
+FINAL SUMMARY OF YOUR TEXT: """
 
 def long_summary_prompt(text):
     return f"""\
@@ -43,11 +43,11 @@ Now your task:
 
 TEXT: {text}
 
-FINAL SUMMARY: """
+FINAL SUMMARY OF YOUR TEXT: """
 
 def reversed_summary_prompt(text):
     return f"""\
-    You are a specialist in extracting the most critical facts from an earnings‑call transcript.
+You are a specialist in extracting the most critical facts from an earnings‑call transcript.
 
 Here is the text from the earnings call transcript that you need to summarize:
 TEXT: {text}
@@ -64,4 +64,4 @@ SUMMARY: Q3 adjusted EPS $0.66. Q3 revenue $1.02 B, +9% YoY. FY revenue guide $3
 TEXT: “During Q1, sales climbed 10% to $1.151 B, and EPS hit $0.64. The company raised its 2021 sales guide to $4.8–5.0 B and EPS guide to $2.55–2.75, and increased its Q2 dividend by $0.02 to $0.42 per share.”
 SUMMARY: Q1 sales $1.151 B, +10% YoY. Q1 EPS $0.64. Raised 2021 sales guide to $4.8–5.0 B. Raised 2021 EPS guide to $2.55–2.75. Q2 dividend up $0.02 to $0.42.
 
-FINAL SUMMARY: """
+FINAL SUMMARY OF YOUR TEXT: """

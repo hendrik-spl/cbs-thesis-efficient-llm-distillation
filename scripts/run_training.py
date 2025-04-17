@@ -41,7 +41,7 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, infe
     elif "gold" in dataset_name:
         response_template = "FINAL CLASSIFICATION:"
     elif "summary" in dataset_name:
-        response_template = "FINAL SUMMARY:"
+        response_template = "FINAL SUMMARY OF YOUR TEXT:"
     data_collator = DataCollatorForCompletionOnlyLM(response_template=response_template, tokenizer=tokenizer)
 
     sft_config = get_sft_config(student_model, dataset_name, wandb_run, model_output_dir)

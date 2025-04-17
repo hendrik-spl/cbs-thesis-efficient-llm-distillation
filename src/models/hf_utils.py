@@ -45,7 +45,7 @@ class HF_Manager:
             elif "summary" in dataset_name:
                 text = example["text"]
                 prompt = get_summmary_prompt(text)
-                prompt_separator = "FINAL SUMMARY: "
+                prompt_separator = "FINAL SUMMARY OF YOUR TEXT: "
             completion = pipe(prompt, **params)
             completion = completion[0]["generated_text"]
             label_pos = completion.find(prompt_separator)
