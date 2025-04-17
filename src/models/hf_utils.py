@@ -9,6 +9,7 @@ from transformers.generation.stopping_criteria import StoppingCriteriaList
 
 from src.models.hf_stopping import KeywordStoppingCriteria
 from src.prompts.sentiment import get_sentiment_prompt
+from src.prompts.gold import get_gold_classification_prompt
 from src.models.model_mapping import model_mapping
 from src.models.query_utils import find_majority, clean_llm_output, get_query_params
 from src.data.data_manager import get_samples
@@ -29,15 +30,21 @@ class HF_Manager:
         for i, example in tqdm(enumerate(dataset), total=min(limit, len(dataset))):
             if i >= limit:
                 break
-            sentence = example["sentence"]
-            prompt = get_sentiment_prompt(sentence)
+            if "sentiment" in dataset_name:
+                sentence = example["sentence"]
+                prompt = get_sentiment_prompt(sentence)
+                prompt_separator = "Final Label:"
+            elif "gold" in dataset_name:
+                headline = example["News"]
+                prompt = get_gold_classification_prompt(headline)
+                prompt_separator = "FINAL CLASSIFICATION:"
             completion = pipe(prompt, **params)
             completion = completion[0]["generated_text"]
-            label_pos = completion.find("Final Label:")
+            label_pos = completion.find(prompt_separator)
             if label_pos == -1:
                 print("Label not found in completion.")
                 continue
-            completion = completion[label_pos + len("Final Label:"):].strip()
+            completion = completion[label_pos + len(prompt_separator):].strip()
             print(f"Example {i}:")
             print(f"Prompt: {prompt}")
             print(f"Completion by student: {completion}")
