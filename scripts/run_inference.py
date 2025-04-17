@@ -19,12 +19,12 @@ def parse_arguments():
     parser.add_argument("--model_name", type=str, required=True, help="Name of the model to load (e.g., 'llama3.2:1b')")
     parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment:50agree')")
     parser.add_argument("--limit", type=int, help="Limit the number of samples to process (default: 10)")
-    parser.add_argument("--shots", type=int, default=5, help="Number of shots for the model (default: 5)")
+    parser.add_argument("--shots", type=int, default=1, help="Number of shots for the model (default: 5)")
     parser.add_argument("--run_on_test", action="store_true", help="Whether to run on the test set. If not specified, runs on the training set.")
     parser.add_argument("--use_ollama", action="store_true", help="Whether to use Ollama. If not specified, uses HF to run the model.")
     return parser.parse_args()
 
-def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, run_on_test: bool = False, limit: int = None, shots: int = 5) -> str:
+def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, run_on_test: bool = False, limit: int = None, shots: int = 1) -> str:
     print(f"Running inference on ollama with model {model_name} on dataset {dataset_name}. Limit: {limit}. Run on test: {run_on_test}. Shots: {shots}.")
 
     prompts, true_labels, pred_labels = load_data(dataset_name=dataset_name, run_on_test=run_on_test, limit=limit)
