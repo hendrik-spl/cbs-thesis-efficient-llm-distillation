@@ -25,7 +25,7 @@ def parse_arguments():
     parser.add_argument("--run_inference", type=bool, default=True, help="Whether to run inference after training (default: True)")
     return parser.parse_args()
 
-def run_training(student_model: str, teacher_model: str, dataset_name: str, inference_wandb_title: str, wandb_run: wandb, run_inference: bool = True):
+def run_training(student_model: str, teacher_model: str, dataset_name: str, inference_wandb_title: str, wandb_run: wandb):
     print(f"Running training with model {student_model} on dataset {dataset_name} from {teacher_model}.")
 
     model, tokenizer = HF_Manager.load_model(student_model, peft=True)
@@ -36,12 +36,17 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, infe
 
     early_stopping = EarlyStoppingCallback(early_stopping_patience=3, early_stopping_threshold=0.01)
 
-    response_template = "Final Label:" if "sentiment" in dataset_name else "FINAL CLASSIFICATION:"
+    if "sentiment" in dataset_name:
+        response_template = "Final Label:"
+    elif "gold" in dataset_name:
+        response_template = "FINAL CLASSIFICATION:"
+    elif "summary" in dataset_name:
+        response_template = "FINAL SUMMARY:"
     data_collator = DataCollatorForCompletionOnlyLM(response_template=response_template, tokenizer=tokenizer)
 
     sft_config = get_sft_config(student_model, dataset_name, wandb_run, model_output_dir)
     training_args = SFTConfig(**sft_config)
-
+ 
     trainer = SFTTrainer(
         model=model,
         args=training_args,
@@ -97,7 +102,6 @@ def main():
         teacher_model = args.teacher_model,
         dataset_name = args.dataset,
         inference_wandb_title = args.inference_title,
-        run_inference=args.run_inference,
         wandb_run=wandb_run,
         )
     

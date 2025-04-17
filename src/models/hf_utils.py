@@ -10,6 +10,7 @@ from transformers.generation.stopping_criteria import StoppingCriteriaList
 from src.models.hf_stopping import KeywordStoppingCriteria
 from src.prompts.sentiment import get_sentiment_prompt
 from src.prompts.gold import get_gold_classification_prompt
+from src.prompts.summary import get_summmary_prompt
 from src.models.model_mapping import model_mapping
 from src.models.query_utils import find_majority, clean_llm_output, get_query_params
 from src.data.data_manager import get_samples
@@ -36,11 +37,15 @@ class HF_Manager:
             if "sentiment" in dataset_name:
                 sentence = example["sentence"]
                 prompt = get_sentiment_prompt(sentence)
-                prompt_separator = "Final Label:"
+                prompt_separator = "Final Label: "
             elif "gold" in dataset_name:
                 headline = example["News"]
                 prompt = get_gold_classification_prompt(headline)
-                prompt_separator = "FINAL CLASSIFICATION:"
+                prompt_separator = "FINAL CLASSIFICATION: "
+            elif "summary" in dataset_name:
+                text = example["text"]
+                prompt = get_summmary_prompt(text)
+                prompt_separator = "FINAL SUMMARY: "
             completion = pipe(prompt, **params)
             completion = completion[0]["generated_text"]
             label_pos = completion.find(prompt_separator)
