@@ -21,7 +21,7 @@ Base your summary solely on the TEXT provided and do not add any external contex
 Your TEXT to analyze:
 TEXT: {text}
 
-BULLET-POINT SUMMARY: """
+FINAL SUMMARY: """
 
 def long_summary_prompt(text):
     return f"""\
@@ -43,7 +43,7 @@ Now your task:
 
 TEXT: {text}
 
-SUMMARY: """
+FINAL SUMMARY: """
 
 def reversed_summary_prompt(text):
     return f"""\
