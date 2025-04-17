@@ -1,4 +1,4 @@
-def get_summmary_prompt(text, version="short"):
+def get_summmary_prompt(text, version="long"):
     if version == "short":
         return short_summary_prompt(text)
     elif version == "long":
