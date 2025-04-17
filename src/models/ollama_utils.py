@@ -63,6 +63,9 @@ def query_ollama_model(model, prompt, params):
         "top_k": params.get("top_k"),
         "num_predict": params.get("max_new_tokens"),
         }
+    
+    if params.get("max_context_length") is not None:
+        options["num_ctx"] = params.get("max_context_length")
 
     max_retries = params.get("custom_max_retries")
     retry_delay = params.get("custom_retry_delay")

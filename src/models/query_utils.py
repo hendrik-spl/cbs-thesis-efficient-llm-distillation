@@ -34,6 +34,7 @@ query_params_summary = {
     "max_new_tokens": 192,
     "custom_max_retries": 3,
     "custom_retry_delay": 5,
+    "max_context_length": 6144
 }
 
 def get_query_params(dataset_name: str):
