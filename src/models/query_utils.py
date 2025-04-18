@@ -122,8 +122,9 @@ def clean_llm_output_summary(text: str):
         str: The cleaned text with headlines and bullet point markers removed
     """
     # Remove headline patterns that typically introduce bullet points
-    # This targets phrases like "here are the 5 bullet points..." ending with a colon
-    cleaned_text = re.sub(r'(?im)^.*?(bullet points?|summary|summariz|key points|important facts).*?:\s*$', '', text)
+    # Handle headlines ending with either period or colon
+    cleaned_text = re.sub(r'(?im)^\d*\s*bullet points?.*?(?:\.|\:)', '', text)
+    cleaned_text = re.sub(r'(?im)^.*?(bullet points?|summary|summariz|key points|important facts).*?(?:\.|\:)', '', cleaned_text)
     
     # Remove any markdown headers (lines starting with #)
     cleaned_text = re.sub(r'(?m)^#+\s+.*$', '', cleaned_text)
