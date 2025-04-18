@@ -67,4 +67,8 @@ def get_dataset_specific_params(dataset_name):
     if "summary" in dataset_name:
         params["max_seq_length"] = 6144
         params["num_train_epochs"] = 3
+        # reduce batch size by 2 for this task to fit in memory
+        params["per_device_train_batch_size"] = params["per_device_train_batch_size"] // 2
+        params["per_device_eval_batch_size"] = params["per_device_eval_batch_size"] // 2
+        params["gradient_accumulation_steps"] = params["gradient_accumulation_steps"] * 2
     return params
