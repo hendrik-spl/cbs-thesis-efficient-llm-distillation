@@ -112,7 +112,30 @@ def clean_llm_output(dataset_name, text: str):
         return clean_llm_output_summary(text)
 
 def clean_llm_output_summary(text: str):
-    return text.strip().lower()
+    """
+    Clean LLM generated text by removing headlines and bullet point markers.
+    
+    Args:
+        text (str): The text to clean
+        
+    Returns:
+        str: The cleaned text with headlines and bullet point markers removed
+    """
+    # Remove headline patterns that typically introduce bullet points
+    # This targets phrases like "here are the 5 bullet points..." ending with a colon
+    cleaned_text = re.sub(r'(?im)^.*?(bullet points?|summary|summariz|important facts).*?:\s*$', '', text)
+    
+    # Remove any markdown headers (lines starting with #)
+    cleaned_text = re.sub(r'(?m)^#+\s+.*$', '', cleaned_text)
+    
+    # Remove asterisks or hyphens at the start of lines
+    cleaned_text = re.sub(r'(?m)^\s*[\*\-]\s*', '', cleaned_text)
+    
+    # Clean up extra whitespace and normalize newlines
+    cleaned_text = re.sub(r'\n{3,}', '\n\n', cleaned_text)  # Replace 3+ newlines with 2
+    cleaned_text = cleaned_text.strip()  # Remove leading/trailing whitespace
+    
+    return cleaned_text
 
 def clean_llm_output_sentiment(text: str):
     """
