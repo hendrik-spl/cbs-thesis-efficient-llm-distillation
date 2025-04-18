@@ -22,8 +22,12 @@ class HF_Manager:
     def predict(model_path, dataset, dataset_name, wandb_run=None, limit=5):
         params = get_query_params(dataset_name)
         # remove ['custom_max_retries', 'custom_retry_delay'] from params because they are not needed downstream and cause ValueErrors
-        params.pop("custom_max_retries", None)
-        params.pop("custom_retry_delay", None)
+        if "custom_max_retries" in params:
+            params.pop("custom_max_retries", None)
+        if "custom_retry_delay" in params:
+            params.pop("custom_retry_delay", None)
+        if "max_context_length" in params:
+            params.pop("max_context_length", None)
 
         pipe = pipeline(
             model=model_path,
