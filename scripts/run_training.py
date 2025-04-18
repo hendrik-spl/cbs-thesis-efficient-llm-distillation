@@ -73,7 +73,11 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, infe
     tokenizer.save_pretrained(model_output_dir)
 
     test_dataset = load_from_disk(f"data/{dataset_name}/test")
-    HF_Manager.predict(model_path=model_output_dir, dataset=test_dataset, dataset_name=dataset_name, wandb_run=wandb_run)
+    try:
+        HF_Manager.predict(model_path=model_output_dir, dataset=test_dataset, dataset_name=dataset_name, wandb_run=wandb_run)
+    except Exception as e:
+        print(f"Error during prediction: {e}")
+        return model_output_dir
 
     return model_output_dir
 
