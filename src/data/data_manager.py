@@ -1,12 +1,15 @@
 import os
 import json
 from datasets import load_dataset, Dataset, load_from_disk
+from transformers import AutoTokenizer
 
 from src.data.data_transforms import DataTransforms
 from src.utils.setup import ensure_dir_exists
 from src.prompts.sentiment import get_sentiment_prompt
 from src.prompts.gold import get_gold_classification_prompt
 from src.prompts.summary import get_summmary_prompt
+
+from src.config.query_config import query_params_summary
 
 def get_samples(dataset_name, limit: int = 5):
     if "sentiment" in dataset_name:
@@ -56,7 +59,7 @@ class SummaryManager:
         return data
     
     @staticmethod
-    def load_data(dataset_name, run_on_test = False, limit = None):
+    def load_data(dataset_name, run_on_test = False, limit = None, truncate = True):
         dataset = load_from_disk(f"data/summary")
         if run_on_test:
             data_split = dataset['test']
@@ -69,11 +72,45 @@ class SummaryManager:
             data_split = data_split.select(range(actual_limit))
 
         texts = data_split['text']
-        prompts = [get_summmary_prompt(texts[i]) for i in range(len(texts))]
         true_labels = data_split['summary']
+
+        if truncate:
+            texts, true_labels = SummaryManager._truncate(texts, true_labels)
+
+        prompts = [get_summmary_prompt(texts[i]) for i in range(len(texts))]
         pred_labels = []
 
         return prompts, true_labels, pred_labels
+    
+    @staticmethod
+    def _truncate(texts, true_labels):
+        """
+        Truncate the prompts and true labels to fit within the model's context length.
+        """
+        max_context_length = query_params_summary["max_context_length"]
+        tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.2-1B-Instruct")
+        prompt_template = get_summmary_prompt("")
+        prompt_template_length = len(tokenizer.encode(prompt_template))
+        max_length = max_context_length - prompt_template_length
+        print(f"""
+              INFO: Truncating transcript texts fit within the max length of {max_length} tokens. 
+              Max context length: {max_context_length} tokens.
+              Prompt template length: {prompt_template_length} tokens. 
+              """)
+
+        # Truncate transcript texts and true labels to fit within the max length
+        truncated_texts = []
+        for text, true_label in zip(texts, true_labels):
+            text_tokens = tokenizer.encode(text)
+            true_label_tokens = tokenizer.encode(true_label)
+
+            # Truncate the transcript texts if the combined length exceeds the max length
+            if len(text_tokens) + len(true_label_tokens) > max_length:
+                # Truncate the transcript text to fit within the max length
+                text_tokens = text_tokens[:max_length - len(true_label_tokens)]
+                text = tokenizer.decode(text_tokens, skip_special_tokens=True)
+            truncated_texts.append(text)
+        return truncated_texts, true_labels
 
 class GoldDataManager:
 
