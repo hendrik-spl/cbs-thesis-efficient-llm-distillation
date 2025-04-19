@@ -20,8 +20,8 @@ def parse_arguments():
     parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment:50agree')")
     parser.add_argument("--limit", type=int, help="Limit the number of samples to process (default: 10)")
     parser.add_argument("--shots", type=int, default=1, help="Number of shots for the model (default: 5)")
-    parser.add_argument("--run_on_test", action="store_true", help="Whether to run on the test set. If not specified, runs on the training set.")
-    parser.add_argument("--use_ollama", action="store_true", help="Whether to use Ollama. If not specified, uses HF to run the model.")
+    parser.add_argument("--run_on_test", type=bool, default=False, help="Whether to run on the test set. If not specified, runs on the training set.")
+    parser.add_argument("--use_ollama", type=bool, default=False, help="Whether to use Ollama. If not specified, uses HF to run the model.")
     return parser.parse_args()
 
 def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, run_on_test: bool = False, limit: int = None, shots: int = 1) -> str:
@@ -92,7 +92,7 @@ def main():
         "limit": args.limit,
         "shots": args.shots,
         "run_on_test": args.run_on_test,
-        "use_ollama": str(args.use_ollama),
+        "use_ollama": args.use_ollama,
     }
 
     custom_notes = ""
@@ -100,7 +100,7 @@ def main():
     wandb_run = wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-inference-v2", tags=tags, config=config, notes=custom_notes)
     log_gpu_info(wandb_run)
 
-    if str(args.use_ollama) == "True":
+    if args.use_ollama:
         check_if_ollama_model_exists(args.model_name)
         tracker, num_queries, prompts, true_labels, pred_labels = run_inference_ollama(
             model_name=args.model_name, 
@@ -122,7 +122,7 @@ def main():
     
     log_inference_to_wandb(wandb_run, tracker, num_queries)
     
-    if str(args.run_on_test) != "True":
+    if args.run_on_test:
         save_model_outputs(prompts, true_labels, pred_labels, args.dataset, args.model_name, wandb_run.name)
     
     evaluate_performance(true_labels, pred_labels, args.dataset, wandb_run)

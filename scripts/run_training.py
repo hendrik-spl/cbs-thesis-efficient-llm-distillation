@@ -111,7 +111,7 @@ def main():
     
     wandb_run.finish()
     
-    if str(args.run_inference) == "True":
+    if args.run_inference:
         print("Running inference on the test set...")
 
         inference_script_path = os.path.join(os.path.dirname(__file__), "run_inference.py")
