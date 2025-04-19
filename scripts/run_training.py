@@ -14,7 +14,7 @@ from src.models.hf_utils import HF_Manager
 from src.utils.logs import log_training_to_wandb, log_gpu_info
 from datasets import load_from_disk
 from src.data.data_transforms import DataTransforms
-from scripts.training_config import get_sft_config
+from src.config.training_config import get_sft_config
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run training with models")

@@ -3,39 +3,7 @@ import json
 import random
 from collections import Counter
 
-query_params_sentiment = {
-    "temperature": 0.3,
-    "seed": None, # Set to None for self-consistency
-    "do_sample": True, # Enable sampling for diversity
-    "top_p": 0.8,
-    "top_k": 40,
-    "max_new_tokens": 64,
-    "custom_max_retries": 3,
-    "custom_retry_delay": 5,
-}
-
-query_params_gold = {
-    "temperature": 0.3,
-    "seed": None, # Set to None for self-consistency
-    "do_sample": True, # Enable sampling for diversity
-    "top_p": 0.8,
-    "top_k": 40,
-    "max_new_tokens": 128,
-    "custom_max_retries": 3,
-    "custom_retry_delay": 5,
-}
-
-query_params_summary = {
-    "temperature": 0.3,
-    "seed": None, # Set to None for self-consistency
-    "do_sample": True, # Enable sampling for diversity
-    "top_p": 0.8,
-    "top_k": 40,
-    "max_new_tokens": 192,
-    "custom_max_retries": 3,
-    "custom_retry_delay": 5,
-    "max_context_length": 6144
-}
+from src.config.query_config import *
 
 def get_query_params(dataset_name: str):
     if "sentiment" in dataset_name:
