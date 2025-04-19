@@ -109,15 +109,17 @@ def main():
         wandb_run=wandb_run,
         )
     
+    wandb_run.finish()
+    
     if str(args.run_inference) == "True":
         print("Running inference on the test set...")
 
         inference_script_path = os.path.join(os.path.dirname(__file__), "run_inference.py")
         inference_command = [
-            "python", inference_script_path,
-            "--model_name", f"{model_output_dir}",
+            "uv run", inference_script_path,
+            "--model_name", model_output_dir,
             "--dataset", args.dataset,
-            "--run_on_test", "True"
+            "--run_on_test"
         ]
 
         try:
