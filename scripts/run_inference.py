@@ -19,13 +19,12 @@ def parse_arguments():
     parser.add_argument("--model_name", type=str, required=True, help="Name of the model to load (e.g., 'llama3.2:1b')")
     parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment:50agree')")
     parser.add_argument("--limit", type=int, help="Limit the number of samples to process (default: 10)")
-    parser.add_argument("--shots", type=int, default=1, help="Number of shots for the model (default: 5)")
     parser.add_argument("--run_on_test", type=bool, default=False, help="Whether to run on the test set. If not specified, runs on the training set.")
     parser.add_argument("--use_ollama", type=bool, default=False, help="Whether to use Ollama. If not specified, uses HF to run the model.")
     return parser.parse_args()
 
-def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, run_on_test: bool = False, limit: int = None, shots: int = 1) -> str:
-    print(f"Running inference on ollama with model {model_name} on dataset {dataset_name}. Limit: {limit}. Run on test: {run_on_test}. Shots: {shots}.")
+def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, run_on_test: bool = False, limit: int = None) -> tuple:
+    print(f"Running inference on ollama with model {model_name} on dataset {dataset_name}. Limit: {limit}. Run on test: {run_on_test}.")
 
     prompts, true_labels, pred_labels = load_data(dataset_name=dataset_name, run_on_test=run_on_test, limit=limit)
 
@@ -35,7 +34,7 @@ def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, r
         for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset_name}"):
             verbose = verbose_counter < 2
             try:
-                pred_labels.append(query_ollama_sc(model=model_name, prompt=prompt, dataset_name=dataset_name, shots=shots, verbose=verbose))
+                pred_labels.append(query_ollama_sc(model=model_name, prompt=prompt, dataset_name=dataset_name, verbose=verbose))
                 verbose_counter += 1
             except Exception as e:
                 print(f"Error during inference: {e}")
@@ -44,12 +43,12 @@ def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, r
         track_samples_ollama(model_name, dataset_name)
     except Exception as e:
         print(f"Error during tracking samples: {e}")
-        return tracker, len(prompts) * shots, prompts, true_labels, pred_labels
+        return tracker, len(prompts), prompts, true_labels, pred_labels
 
-    return tracker, len(prompts) * shots, prompts, true_labels, pred_labels
+    return tracker, len(prompts), prompts, true_labels, pred_labels
 
-def run_inference_hf(model_name: str, dataset_name: str, wandb_run: wandb, run_on_test: bool = False, limit: int = None, shots: int = 5) -> str:
-    print(f"Running inference on HF with model {model_name} on dataset {dataset_name}. Limit: {limit}. Run on test: {run_on_test}. Shots: {shots}.")
+def run_inference_hf(model_name: str, dataset_name: str, wandb_run: wandb, run_on_test: bool = False, limit: int = None) -> tuple:
+    print(f"Running inference on HF with model {model_name} on dataset {dataset_name}. Limit: {limit}. Run on test: {run_on_test}.")
 
     prompts, true_labels, pred_labels = load_data(dataset_name=dataset_name, run_on_test=run_on_test, limit=limit)
 
@@ -64,7 +63,7 @@ def run_inference_hf(model_name: str, dataset_name: str, wandb_run: wandb, run_o
         for prompt in tqdm(prompts, total=len(prompts), desc=f"Running inference with {model_name} on {dataset_name}"):
             verbose = verbose_counter < 2
             try:
-                pred_labels.append(HF_Manager.query_hf_sc(model=model, tokenizer=tokenizer, dataset_name=dataset_name, prompt=prompt, shots=shots, verbose=verbose))
+                pred_labels.append(HF_Manager.query_hf_sc(model=model, tokenizer=tokenizer, dataset_name=dataset_name, prompt=prompt, verbose=verbose))
                 verbose_counter += 1
             except Exception as e:
                 print(f"Error during inference: {e}")
@@ -73,9 +72,9 @@ def run_inference_hf(model_name: str, dataset_name: str, wandb_run: wandb, run_o
         HF_Manager.track_samples_hf(model, tokenizer, dataset_name)
     except Exception as e:
         print(f"Error during tracking samples: {e}")
-        return tracker, len(prompts) * shots, prompts, true_labels, pred_labels
+        return tracker, len(prompts), prompts, true_labels, pred_labels
 
-    return tracker, len(prompts) * shots, prompts, true_labels, pred_labels
+    return tracker, len(prompts), prompts, true_labels, pred_labels
 
 def main():
     set_seed(42)
@@ -89,7 +88,6 @@ def main():
         "model_name": args.model_name,
         "dataset": args.dataset,
         "limit": args.limit,
-        "shots": args.shots,
         "run_on_test": args.run_on_test,
         "use_ollama": args.use_ollama,
     }
@@ -105,7 +103,6 @@ def main():
             model_name=args.model_name, 
             dataset_name=args.dataset,
             limit=args.limit,
-            shots=args.shots,
             run_on_test=args.run_on_test,
             wandb_run=wandb_run,
             )
@@ -114,7 +111,6 @@ def main():
             model_name=args.model_name, 
             dataset_name=args.dataset,
             limit=args.limit,
-            shots=args.shots,
             run_on_test=args.run_on_test,
             wandb_run=wandb_run,
             )

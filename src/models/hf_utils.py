@@ -70,7 +70,7 @@ class HF_Manager:
                     })
             
     @staticmethod 
-    def query_hf_sc(model, tokenizer, dataset_name, prompt, shots, verbose=False):
+    def query_hf_sc(model, tokenizer, dataset_name, prompt, shots=1, verbose=False):
         query_params = get_query_params(dataset_name)
         responses = []
         
