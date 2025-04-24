@@ -22,7 +22,6 @@ def parse_arguments():
     parser.add_argument("--teacher_model", type=str, required=True, help="Name of the teacher model to load")
     parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset")
     parser.add_argument("--inference_title", type=str, required=True, help="Title of the inference file to load")
-    parser.add_argument("--run_inference", type=bool, default=True, help="Whether to run inference after training (default: True)")
     return parser.parse_args()
 
 def run_training(student_model: str, teacher_model: str, dataset_name: str, inference_wandb_title: str, wandb_run: wandb):
@@ -94,8 +93,7 @@ def main():
         "student_model": args.student_model,
         "teacher_model": args.teacher_model,
         "dataset": args.dataset,
-        "inference_title": args.inference_title,
-        "run_inference": args.run_inference
+        "inference_title": args.inference_title
     }
 
     wandb_run = wandb.init(entity="cbs-thesis-efficient-llm-distillation", project="model-training", tags=tags, config=config)
@@ -111,22 +109,20 @@ def main():
     
     wandb_run.finish()
     
-    if args.run_inference:
-        print("Running inference on the test set...")
+    print("Running inference on the test set...")
+    inference_script_path = os.path.join(os.path.dirname(__file__), "run_inference.py")
+    inference_command = [
+        "uv run", inference_script_path,
+        "--model_name", model_output_dir,
+        "--dataset", args.dataset,
+        "--run_on_test"
+    ]
 
-        inference_script_path = os.path.join(os.path.dirname(__file__), "run_inference.py")
-        inference_command = [
-            "uv run", inference_script_path,
-            "--model_name", model_output_dir,
-            "--dataset", args.dataset,
-            "--run_on_test"
-        ]
-
-        try:
-            subprocess.run(inference_command, check=True)
-            print("Inference on test set completed successfully")
-        except subprocess.CalledProcessError as e:
-            print(f"Error running inference: {e}")
+    try:
+        subprocess.run(inference_command, check=True)
+        print("Inference on test set completed successfully")
+    except subprocess.CalledProcessError as e:
+        print(f"Error running inference: {e}")
 
 if __name__ == "__main__":
     main()
