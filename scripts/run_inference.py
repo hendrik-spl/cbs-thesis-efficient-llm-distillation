@@ -19,8 +19,8 @@ def parse_arguments():
     parser.add_argument("--model_name", type=str, required=True, help="Name of the model to load (e.g., 'llama3.2:1b')")
     parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., 'sentiment:50agree')")
     parser.add_argument("--limit", type=int, help="Limit the number of samples to process (default: 10)")
-    parser.add_argument("--run_on_test", type=bool, default=False, help="Whether to run on the test set. If not specified, runs on the training set.")
-    parser.add_argument("--use_ollama", type=bool, default=False, help="Whether to use Ollama. If not specified, uses HF to run the model.")
+    parser.add_argument("--run_on_test", action="store_true", help="Whether to run on the test set. If not specified, runs on the training set.")
+    parser.add_argument("--use_ollama", action="store_true", help="Whether to use Ollama. If not specified, uses HF to run the model.")
     return parser.parse_args()
 
 def run_inference_ollama(model_name: str, dataset_name: str, wandb_run: wandb, run_on_test: bool = False, limit: int = None) -> tuple:
