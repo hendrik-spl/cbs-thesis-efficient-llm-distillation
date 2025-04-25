@@ -24,19 +24,17 @@ def track_sample_ollama(model, prompt, query_params):
     response = query_ollama_model(model, prompt, query_params)
     return response
 
-def query_ollama_sc(model, prompt, dataset_name, shots=1, verbose=False):
+def query_ollama_sc(model, prompt, dataset_name, verbose=False):
     query_params = get_query_params(dataset_name)
-    responses = []
     
-    for i in range(shots):
-        response = query_ollama_model(model, prompt, query_params)
-        responses.append(clean_llm_output(dataset_name, response))
-        if verbose:
-            print(f"Response: {response}")
-            print(f"Cleaned Response: {clean_llm_output(dataset_name, response)}")
-            print(f"-----------")
+    response = query_ollama_model(model, prompt, query_params)
+    cleaned_response = clean_llm_output(dataset_name, response)
+    if verbose:
+        print(f"Response: {response}")
+        print(f"Cleaned Response: {cleaned_response}")
+        print(f"-----------")
     
-    return find_majority(responses, dataset_name)
+    return cleaned_response
 
 def query_ollama_model(model, prompt, params):
     """

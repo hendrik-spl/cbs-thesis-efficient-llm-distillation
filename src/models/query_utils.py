@@ -138,7 +138,8 @@ def clean_llm_output_sentiment(text: str):
     
     if not words_found:
         return "neutral"
-        
+    
+    # If no exact matches, find the majority sentiment
     majority = find_majority(words_found, dataset_name="sentiment")
     
     return majority

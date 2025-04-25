@@ -70,19 +70,17 @@ class HF_Manager:
                     })
             
     @staticmethod 
-    def query_hf_sc(model, tokenizer, dataset_name, prompt, shots=1, verbose=False):
+    def query_hf_sc(model, tokenizer, dataset_name, prompt, verbose=False):
         query_params = get_query_params(dataset_name)
-        responses = []
         
-        for i in range(shots):
-            response = HF_Manager.query_model(model, tokenizer, dataset_name, prompt, query_params)
-            responses.append(clean_llm_output(dataset_name, response))
-            if verbose:
-                print(f"Response: {response}")
-                print(f"Cleaned Response: {clean_llm_output(dataset_name, response)}")
-                print(f"-----------")
+        response = HF_Manager.query_model(model, tokenizer, dataset_name, prompt, query_params)
+        cleaned_response = clean_llm_output(dataset_name, response)
+        if verbose:
+            print(f"Response: {response}")
+            print(f"Cleaned Response: {cleaned_response}")
+            print(f"-----------")
         
-        return find_majority(responses=responses, dataset_name=dataset_name)
+        return cleaned_response
 
     @staticmethod
     def query_model(model, tokenizer, dataset_name, prompt, params):
