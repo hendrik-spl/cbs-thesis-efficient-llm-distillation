@@ -82,7 +82,7 @@ class HF_Manager:
                 print(f"Cleaned Response: {clean_llm_output(dataset_name, response)}")
                 print(f"-----------")
         
-        return find_majority(responses, dataset_name)
+        return find_majority(responses=responses, dataset_name=dataset_name)
 
     @staticmethod
     def query_model(model, tokenizer, dataset_name, prompt, params):

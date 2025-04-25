@@ -139,7 +139,7 @@ def clean_llm_output_sentiment(text: str):
     if not words_found:
         return "neutral"
         
-    majority = find_majority(words_found, dataset="sentiment")
+    majority = find_majority(words_found, dataset_name="sentiment")
     
     return majority
 
