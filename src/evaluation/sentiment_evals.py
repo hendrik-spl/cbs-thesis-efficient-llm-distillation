@@ -6,6 +6,16 @@ from datasets import load_from_disk
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, balanced_accuracy_score
 
 def measure_performance_sentiment_inference(true_labels, pred_labels, wandb_run):
+    # Convert all labels to integers to ensure type consistency
+    mapping = {
+        "negative": 0,
+        "neutral": 1,
+        "positive": 2
+    }
+    
+    # Transform labels from strings to integers if they are strings
+    true_labels = [mapping.get(label, label) if isinstance(label, str) else label for label in true_labels]
+    pred_labels = [mapping.get(label, label) if isinstance(label, str) else label for label in pred_labels]
 
     # Define the ordering of classes in reverse (Positive first for plot!)
     classes = [2, 1, 0]  # Positive, Neutral, Negative
