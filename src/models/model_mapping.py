@@ -18,4 +18,7 @@ model_mapping = {
     "opt:125m": {
         "HF" : "facebook/opt-125m",
     },
+    "opt:350m": {
+        "HF" : "facebook/opt-350m",
+    },
 }
