@@ -44,6 +44,11 @@ def get_sft_config(student_model, dataset_name, wandb_run, model_output_dir):
 
 def get_model_specific_params(model_name):
     params = {}
+    if "125m" in model_name:
+        params["per_device_train_batch_size"] = 16
+        params["per_device_eval_batch_size"] = 16
+        params["gradient_accumulation_steps"] = 4
+        params["learning_rate"] = 5e-5
     if "1b" in model_name:
         params["per_device_train_batch_size"] = 8
         params["per_device_eval_batch_size"] = 8

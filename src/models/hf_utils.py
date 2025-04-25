@@ -144,7 +144,13 @@ class HF_Manager:
                                                      )
         tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-        if tokenizer.pad_token is None:
+        if "opt" in model_name:
+            print(f"Loading OPT model {model_name}. Note: OPT adds EOS token at prompt beginning.")
+            if tokenizer.pad_token is None:
+                tokenizer.pad_token = tokenizer.eos_token
+                model.config.pad_token_id = model.config.eos_token_id
+
+        elif tokenizer.pad_token is None:
             print(f"Tokenizer {tokenizer.name_or_path} does not have a pad token. Setting a unique pad token.")
 
             # Add a new special token as pad_token
@@ -183,7 +189,6 @@ class HF_Manager:
         """
         from peft import AutoPeftModelForCausalLM
         from transformers import AutoTokenizer
-        import torch
 
         # Step 1: Load the tokenizer from the fine-tuned model
         tokenizer = AutoTokenizer.from_pretrained(model_path)
