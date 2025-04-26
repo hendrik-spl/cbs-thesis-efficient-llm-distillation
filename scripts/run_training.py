@@ -81,7 +81,6 @@ def main():
     ensure_cpu_in_codecarbon()
 
     tags = [
-        "test"
     ]
 
     config = {
