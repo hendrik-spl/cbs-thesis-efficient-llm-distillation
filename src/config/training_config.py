@@ -44,6 +44,16 @@ def get_sft_config(student_model, dataset_name, wandb_run, model_output_dir):
 
 def get_model_specific_params(model_name):
     params = {}
+    if "125m" in model_name:
+        params["per_device_train_batch_size"] = 16
+        params["per_device_eval_batch_size"] = 16
+        params["gradient_accumulation_steps"] = 4
+        params["learning_rate"] = 5e-5
+    if "350m" in model_name:
+        params["per_device_train_batch_size"] = 16
+        params["per_device_eval_batch_size"] = 16
+        params["gradient_accumulation_steps"] = 4
+        params["learning_rate"] = 5e-5
     if "1b" in model_name:
         params["per_device_train_batch_size"] = 8
         params["per_device_eval_batch_size"] = 8
@@ -65,11 +75,11 @@ def get_dataset_specific_params(dataset_name):
     params = {}
     if "sentiment" in dataset_name:
         params["max_seq_length"] = 392 # max_new_tokens 8 + max_context_length 384
-        params["num_train_epochs"] = 3
+        params["num_train_epochs"] = 5
     if "gold" in dataset_name:
         params["max_seq_length"] = 864 # max_new_tokens 96 + max_context_length 768
-        params["num_train_epochs"] = 3
+        params["num_train_epochs"] = 5
     if "summary" in dataset_name:
         params["max_seq_length"] = 6400 # max_new_tokens 256 + max_context_length 6144
-        params["num_train_epochs"] = 3
+        params["num_train_epochs"] = 5
     return params

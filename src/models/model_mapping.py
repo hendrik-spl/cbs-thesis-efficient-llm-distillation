@@ -15,4 +15,10 @@ model_mapping = {
         "HF" : "meta-llama/Llama-3.1-405B-Instruct",
         "ollama" : "llama3.1:405b-instruct-q4_K_M",
     },
+    "opt:125m": {
+        "HF" : "facebook/opt-125m",
+    },
+    "opt:350m": {
+        "HF" : "facebook/opt-350m",
+    },
 }

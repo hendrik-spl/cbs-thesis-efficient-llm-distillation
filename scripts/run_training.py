@@ -112,7 +112,9 @@ def main():
     print("Running inference on the test set...")
     inference_script_path = os.path.join(os.path.dirname(__file__), "run_inference.py")
     inference_command = [
-        "uv run", inference_script_path,
+        "uv", 
+        "run", 
+        inference_script_path,
         "--model_name", model_output_dir,
         "--dataset", args.dataset,
         "--run_on_test"
