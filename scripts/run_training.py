@@ -14,7 +14,7 @@ from src.models.hf_utils import HF_Manager
 from src.utils.logs import log_training_to_wandb, log_gpu_info
 from datasets import load_from_disk
 from src.data.data_transforms import DataTransforms
-from src.config.training_config import get_sft_config
+from src.config.training_config import get_sft_config, get_response_template
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run training with models")
@@ -35,12 +35,7 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, infe
 
     early_stopping = EarlyStoppingCallback(early_stopping_patience=3)
 
-    if "sentiment" in dataset_name:
-        response_template = "Final Label:"
-    elif "gold" in dataset_name:
-        response_template = "FINAL CLASSIFICATION:"
-    elif "summary" in dataset_name:
-        response_template = "FINAL SUMMARY OF YOUR TEXT:"
+    response_template = get_response_template(dataset_name)
     data_collator = DataCollatorForCompletionOnlyLM(response_template=response_template, tokenizer=tokenizer)
 
     sft_config = get_sft_config(student_model, dataset_name, wandb_run, model_output_dir)

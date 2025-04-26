@@ -1,3 +1,5 @@
+response_template = "FINAL SUMMARY OF YOUR TEXT:"
+
 def get_summmary_prompt(text, version="reversed"):
     if version == "short":
         return short_summary_prompt(text)

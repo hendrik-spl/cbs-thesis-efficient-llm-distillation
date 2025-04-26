@@ -1,3 +1,5 @@
+response_template = "Final Label:"
+
 def get_sentiment_prompt(text):
     return f"""\
 You are a highly qualified expert trained to annotate machine learning training data.

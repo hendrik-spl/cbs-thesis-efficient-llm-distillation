@@ -1,3 +1,5 @@
+response_template = "FINAL CLASSIFICATION:"
+
 def get_gold_classification_prompt(text):
     return f"""\
 You are a highly qualified expert trained to annotate machine learning training data.

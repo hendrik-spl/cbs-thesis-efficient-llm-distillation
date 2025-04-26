@@ -1,3 +1,7 @@
+from src.prompts.sentiment import response_template as sentiment_response_template
+from src.prompts.gold import response_template as gold_response_template
+from src.prompts.summary import response_template as summary_response_template
+
 def get_sft_config(student_model, dataset_name, wandb_run, model_output_dir):
     training_args = {
     # Constant parameters
@@ -76,3 +80,13 @@ def get_dataset_specific_params(dataset_name):
     if "summary" in dataset_name:
         params["max_seq_length"] = 6400 # max_new_tokens 256 + max_context_length 6144
     return params
+
+def get_response_template(dataset_name):
+    if "sentiment" in dataset_name:
+        return sentiment_response_template
+    elif "gold" in dataset_name:
+        return gold_response_template
+    elif "summary" in dataset_name:
+        return summary_response_template
+    else:
+        raise ValueError(f"Unknown dataset name for returning response template: {dataset_name}")
