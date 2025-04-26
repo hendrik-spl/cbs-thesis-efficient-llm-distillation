@@ -33,7 +33,7 @@ def run_training(student_model: str, teacher_model: str, dataset_name: str, infe
 
     model_output_dir = ensure_dir_exists(f"models/{dataset_name}/{student_model}/{wandb_run.name}")
 
-    early_stopping = EarlyStoppingCallback(early_stopping_patience=3, early_stopping_threshold=0.01)
+    early_stopping = EarlyStoppingCallback(early_stopping_patience=3)
 
     if "sentiment" in dataset_name:
         response_template = "Final Label:"
