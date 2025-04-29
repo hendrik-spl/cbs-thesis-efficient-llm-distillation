@@ -38,7 +38,7 @@ def get_sft_config(student_model, dataset_name, wandb_run, model_output_dir):
     training_args.update(get_model_specific_params(student_model))
     training_args.update(get_dataset_specific_params(dataset_name))
 
-    if "summary" in dataset_name and "70b" not in student_model: # reduce batch size by 2 for this task to fit in memory
+    if "summary" in dataset_name: # reduce batch size by 2 for this task to fit in memory
         training_args["per_device_train_batch_size"] = training_args["per_device_train_batch_size"] // 2
         training_args["per_device_eval_batch_size"] = training_args["per_device_eval_batch_size"] // 2
         training_args["gradient_accumulation_steps"] = training_args["gradient_accumulation_steps"] * 2
@@ -64,11 +64,6 @@ def get_model_specific_params(model_name):
         params["per_device_eval_batch_size"] = 4
         params["gradient_accumulation_steps"] = 16
         params["learning_rate"] = 1e-5
-    if "70b" in model_name:
-        params["per_device_train_batch_size"] = 1
-        params["per_device_eval_batch_size"] = 1
-        params["gradient_accumulation_steps"] = 64
-        params["learning_rate"] = 5e-6
     return params
 
 def get_dataset_specific_params(dataset_name):
