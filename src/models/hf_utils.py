@@ -107,7 +107,7 @@ class HF_Manager:
                 KeywordStoppingCriteria(tokenizer, stop_words, prompt_length, max_tokens=3)
             ])
         elif "summary" in dataset_name:
-            stop_words = ["please let me know if"]
+            stop_words = ["please let me know if", "i hope it is correct"]
             stopping_criteria = StoppingCriteriaList([
                 KeywordStoppingCriteria(tokenizer, stop_words, prompt_length, max_tokens=None)
             ])
