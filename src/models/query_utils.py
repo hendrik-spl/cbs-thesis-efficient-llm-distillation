@@ -102,6 +102,11 @@ def clean_llm_output_summary(text: str):
     
     # Remove asterisks or hyphens at the start of lines
     cleaned_text = re.sub(r'(?m)^\s*[\*\-•]\s*', '', cleaned_text)
+
+    # Remove specific phrases that are common in LLM outputs of summaries
+    phrases = ["i hope it is correct", "please let me know if"]
+    for phrase in phrases:
+        cleaned_text = re.sub(rf'(?i){phrase}', '', cleaned_text)
     
     # Clean up extra whitespace and normalize newlines
     cleaned_text = re.sub(r'\n{3,}', '\n\n', cleaned_text)  # Replace 3+ newlines with 2
