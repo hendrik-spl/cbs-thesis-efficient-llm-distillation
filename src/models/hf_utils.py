@@ -104,12 +104,12 @@ class HF_Manager:
         if "sentiment" in dataset_name:
             stop_words = ["text:"]
             stopping_criteria = StoppingCriteriaList([
-                KeywordStoppingCriteria(tokenizer, stop_words, prompt_length)
+                KeywordStoppingCriteria(tokenizer, stop_words, prompt_length, max_tokens=3)
             ])
         elif "summary" in dataset_name:
             stop_words = ["Please let me know if"]
             stopping_criteria = StoppingCriteriaList([
-                KeywordStoppingCriteria(tokenizer, stop_words, prompt_length)
+                KeywordStoppingCriteria(tokenizer, stop_words, prompt_length, max_tokens=None)
             ])
         else:
             stopping_criteria = None
