@@ -22,7 +22,7 @@ class KeywordStoppingCriteria(StoppingCriteria):
             return True
             
         # Convert to string to check for keywords
-        generated_text = self.tokenizer.decode(generated_ids)
+        generated_text = self.tokenizer.decode(generated_ids).lower()
         
         # Stop if we see any stopping pattern
         for keyword in self.keywords:
