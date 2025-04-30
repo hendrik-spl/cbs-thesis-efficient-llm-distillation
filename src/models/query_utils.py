@@ -103,9 +103,37 @@ def clean_llm_output_summary(text: str):
     # Remove asterisks or hyphens at the start of lines
     cleaned_text = re.sub(r'(?m)^\s*[\*\-•]\s*', '', cleaned_text)
 
+    # Remove enumerated list items like "1. ..." at the start of a line
+    cleaned_text = re.sub(r'(?m)^\s*\d+\.\s+', '', cleaned_text)
+
+    # Remove any backticks or code blocks
+    cleaned_text = re.sub(r'`+', '', cleaned_text)
+
+    # Remove anything in the response after these phrases
+    phrases_remove_all_after = ["Here is the response in the correct format:"]
+    for phrase in phrases_remove_all_after:
+        cleaned_text = re.sub(rf'(?i){phrase}.*\Z', '', cleaned_text, flags=re.DOTALL)
+
+    # Remove anything in a line after these phrases
+    phrases_remove_line = [
+        "(Note:"
+    ]
+    for phrase in phrases_remove_line:
+        cleaned_text = re.sub(rf'(?i){phrase}.*$', '', cleaned_text, flags=re.DOTALL)
+
     # Remove specific phrases that are common in LLM outputs of summaries
-    phrases = ["i hope it is correct", "please let me know if"]
-    for phrase in phrases:
+    phrases_remove = [
+        "i hope it is correct", 
+        "please let me know if", 
+        "(Note: I added the last point as it was not in the format you requested)", 
+        "Here is the corrected response:", 
+        "(Note: I added the last point as it was not in", 
+        "I hope this is what you were looking for.", 
+        "$0.00",
+        "$$"
+        "Here is the corrected response:"
+        ]
+    for phrase in phrases_remove:
         cleaned_text = re.sub(rf'(?i){phrase}', '', cleaned_text)
     
     # Clean up extra whitespace and normalize newlines
