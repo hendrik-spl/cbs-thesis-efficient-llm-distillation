@@ -112,14 +112,14 @@ def clean_llm_output_summary(text: str):
     # Remove anything in the response after these phrases
     phrases_remove_all_after = ["Here is the response in the correct format:"]
     for phrase in phrases_remove_all_after:
-        cleaned_text = re.sub(rf'(?i){phrase}.*\Z', '', cleaned_text, flags=re.DOTALL)
+        cleaned_text = re.sub(rf'(?i){re.escape(phrase)}.*\Z', '', cleaned_text, flags=re.DOTALL)
 
     # Remove anything in a line after these phrases
     phrases_remove_line = [
         "(Note:"
     ]
     for phrase in phrases_remove_line:
-        cleaned_text = re.sub(rf'(?i){phrase}.*$', '', cleaned_text, flags=re.DOTALL)
+        cleaned_text = re.sub(rf'(?i){re.escape(phrase)}.*$', '', cleaned_text, flags=re.DOTALL)
 
     # Remove specific phrases that are common in LLM outputs of summaries
     phrases_remove = [
@@ -134,7 +134,7 @@ def clean_llm_output_summary(text: str):
         "Here is the corrected response:",
         ]
     for phrase in phrases_remove:
-        cleaned_text = re.sub(rf'(?i){phrase}', '', cleaned_text)
+        cleaned_text = re.sub(rf'(?i){re.escape(phrase)}', '', cleaned_text)
     
     # Clean up extra whitespace and normalize newlines
     cleaned_text = re.sub(r'\n{3,}', '\n\n', cleaned_text)  # Replace 3+ newlines with 2
