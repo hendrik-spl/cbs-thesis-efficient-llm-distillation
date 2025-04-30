@@ -130,8 +130,8 @@ def clean_llm_output_summary(text: str):
         "(Note: I added the last point as it was not in", 
         "I hope this is what you were looking for.", 
         "$0.00",
-        "$$"
-        "Here is the corrected response:"
+        "$$",
+        "Here is the corrected response:",
         ]
     for phrase in phrases_remove:
         cleaned_text = re.sub(rf'(?i){phrase}', '', cleaned_text)
