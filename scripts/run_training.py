@@ -1,7 +1,9 @@
 import os
+import gc
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+import torch
 import wandb
 import argparse
 import subprocess
@@ -102,6 +104,11 @@ def main():
         )
     
     wandb_run.finish()
+
+    # Clean up memory before running inference
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
     
     print("Running inference on the test set...")
     inference_script_path = os.path.join(os.path.dirname(__file__), "run_inference.py")
