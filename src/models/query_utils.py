@@ -150,32 +150,38 @@ def clean_llm_output_sentiment(text: str):
         text (str): The text to clean.
 
     Returns:
-        str: The sentiment label ("negative", "neutral", "positive")
+        int: The sentiment label as integer (0=negative, 1=neutral, 2=positive) or -1 for invalid
     """
-    sentiment_options = ["negative", "neutral", "positive"]
+    # Define mapping for consistent return types
+    mapping = {
+        "negative": 0,
+        "neutral": 1,
+        "positive": 2
+    }
 
     if text is None or text == "":
-        print("Received None or empty text. Marking as -1.")
+        print("Received None text. Marking as invalid (-1).")
         return -1
     
     text = text.strip().lower()
     
-    # look for exact matches
-    if text in sentiment_options:
-        return text
+    # Look for exact matches
+    if text in mapping.keys():
+        return mapping[text]
     
     words_found = []
     
-    for word in sentiment_options:
+    for word in mapping.keys():
         words_found.extend([word] * len(re.findall(word, text)))
     
     if not words_found:
+        print("No valid sentiment found. Marking as invalid (-1).")
         return -1
     
-    # If no exact matches, find the majority sentiment
-    majority = find_majority(words_found, dataset_name="sentiment")
-    
-    return majority
+    # If multiple sentiment words, find the majority
+    majority_word = find_majority(words_found, dataset_name="sentiment")
+    return mapping[majority_word]
+
 
 def clean_llm_output_gold(input_data):
     """
