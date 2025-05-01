@@ -155,8 +155,8 @@ def clean_llm_output_sentiment(text: str):
     sentiment_options = ["negative", "neutral", "positive"]
 
     if text is None or text == "":
-        print("Received None text. Defaulting to neutral.")
-        return "neutral"
+        print("Received None or empty text. Marking as -1.")
+        return -1
     
     text = text.strip().lower()
     
@@ -170,7 +170,7 @@ def clean_llm_output_sentiment(text: str):
         words_found.extend([word] * len(re.findall(word, text)))
     
     if not words_found:
-        return "neutral"
+        return -1
     
     # If no exact matches, find the majority sentiment
     majority = find_majority(words_found, dataset_name="sentiment")

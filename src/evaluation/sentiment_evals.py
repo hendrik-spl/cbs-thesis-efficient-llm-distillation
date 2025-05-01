@@ -15,7 +15,22 @@ def measure_performance_sentiment_inference(true_labels, pred_labels, wandb_run)
     
     # Transform labels from strings to integers if they are strings
     true_labels = [mapping.get(label, label) if isinstance(label, str) else label for label in true_labels]
-    pred_labels = [mapping.get(label, label) if isinstance(label, str) else label for label in pred_labels]
+
+    # Process predicted labels, handling -1 values
+    processed_pred_labels = []
+    for i, pred in enumerate(pred_labels):
+        if pred == -1:
+            # For invalid predictions (-1), assign a value guaranteed to be incorrect
+            # Get the true label for this example
+            true_label = true_labels[i]
+            # Assign a value that's not the true label
+            possible_values = [0, 1, 2]
+            possible_values.remove(true_label)
+            # Randomly select an incorrect value
+            processed_pred_labels.append(possible_values[0])
+        else:
+            # For valid predictions, convert to integer if it's a string
+            processed_pred_labels.append(mapping.get(pred, pred) if isinstance(pred, str) else pred)
 
     # Define the ordering of classes in reverse (Positive first for plot!)
     classes = [2, 1, 0]  # Positive, Neutral, Negative
