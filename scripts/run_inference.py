@@ -117,9 +117,9 @@ def main():
     
     log_inference_to_wandb(wandb_run, tracker, num_queries)
     
-    save_model_outputs(prompts, true_labels, pred_labels, args.dataset, args.model_name, wandb_run.name)
-    
     evaluate_performance(true_labels, pred_labels, args.dataset, wandb_run)
+
+    save_model_outputs(prompts, true_labels, pred_labels, args.dataset, args.model_name, wandb_run.name)
 
 if __name__ == "__main__":
     main()
