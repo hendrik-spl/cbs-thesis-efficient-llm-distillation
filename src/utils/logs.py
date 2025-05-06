@@ -39,11 +39,12 @@ def log_gpu_info(wandb_run=None):
     }
 
 def log_inference_to_wandb(wandb: wandb, tracker, num_queries):
-    total_duration = get_duration(wandb.name)
     wandb.log({"num_queries": num_queries})
-    wandb.log({"inference_duration [s]": total_duration})
-    wandb.log({"energy_consumption [kWh]": tracker._total_energy.kWh})
-    wandb.log({"emissions [CO₂eq, kg]": tracker.final_emissions})
+    if tracker:
+        total_duration = get_duration(wandb.name)
+        wandb.log({"inference_duration [s]": total_duration})
+        wandb.log({"energy_consumption [kWh]": tracker._total_energy.kWh})
+        wandb.log({"emissions [CO₂eq, kg]": tracker.final_emissions})
 
 def log_training_to_wandb(wandb: wandb, tracker):
     total_duration = get_duration(wandb.name)

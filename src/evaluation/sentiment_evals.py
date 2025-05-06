@@ -14,23 +14,13 @@ def measure_performance_sentiment_inference(true_labels, pred_labels, wandb_run)
         pred_labels: List of predicted labels (integers, with -1 for invalid)
         wandb_run: Optional Weights & Biases run object for logging
     """
-    # Convert any string labels to integers
-    mapping = {
-        "negative": 0,
-        "neutral": 1,
-        "positive": 2
-    }
-    
-    # Transform true labels from strings to integers if they are strings
-    true_labels = [mapping.get(label, label) if isinstance(label, str) else label for label in true_labels]
-    
     # Process predicted labels, handling -1 values
     processed_pred_labels = []
-    invalid_count = 0
+    pred_invalid_count = 0
     
     for i, pred in enumerate(pred_labels):
         if pred == -1:
-            invalid_count += 1
+            pred_invalid_count += 1
             # For invalid predictions (-1), assign a value guaranteed to be incorrect
             true_label = true_labels[i]
             # Choose a label different from the true label
@@ -41,27 +31,60 @@ def measure_performance_sentiment_inference(true_labels, pred_labels, wandb_run)
         else:
             # Already numeric, just append
             processed_pred_labels.append(pred)
+
+    # Process true labels, handling -1 values
+    processed_true_labels = []
+    true_invalid_count = 0
+
+    for i, true in enumerate(true_labels):
+        if true == -1:
+            true_invalid_count += 1
+            # For invalid true labels (-1), assign a value guaranteed to be incorrect
+            pred_label = processed_pred_labels[i]
+            # Choose a label different from the predicted label
+            incorrect_labels = [0, 1, 2]
+            if pred_label in incorrect_labels:
+                incorrect_labels.remove(pred_label)
+            processed_true_labels.append(incorrect_labels[0])
+        else:
+            # Already numeric, just append
+            processed_true_labels.append(true)
     
+    # Mapping
+    mapping = {
+        "negative": 0,
+        "neutral": 1,
+        "positive": 2
+    }
+
+    # Transform labels from strings to integers.
+    true_labels = [mapping[label] if isinstance(label, str) else label for label in processed_true_labels]
+    pred_labels = [mapping[label] if isinstance(label, str) else label for label in processed_pred_labels]
+
     # Define the ordering of classes (Positive first for plot!)
     classes = [2, 1, 0]  # Positive, Neutral, Negative
     class_names = ['Positive', 'Neutral', 'Negative']
 
     # Calculate metrics
-    accuracy = accuracy_score(true_labels, processed_pred_labels)
-    balanced_accuracy = balanced_accuracy_score(true_labels, processed_pred_labels)
-    f1_micro = f1_score(true_labels, processed_pred_labels, average='micro')
-    confusion = confusion_matrix(true_labels, processed_pred_labels, labels=classes)
+    accuracy = accuracy_score(true_labels, pred_labels)
+    balanced_accuracy = balanced_accuracy_score(true_labels, pred_labels)
+    f1_micro = f1_score(true_labels, pred_labels, average='micro')
+    confusion = confusion_matrix(true_labels, pred_labels, labels=classes)
 
     # Calculate percentage of invalid predictions
-    invalid_percentage = (invalid_count / len(pred_labels)) * 100 if pred_labels else 0
+    pred_invalid_percentage = (pred_invalid_count / len(pred_labels)) * 100 if pred_labels else 0
+    true_invalid_percentage = (true_invalid_count / len(true_labels)) * 100 if true_labels else 0
+
+    print(f"Invalid predictions: {pred_invalid_count} ({pred_invalid_percentage:.1f}%)")
+    print(f"Invalid true labels: {true_invalid_count} ({true_invalid_percentage:.1f}%)")
     
     # Log metrics to wandb
     wandb_run.log({
         "accuracy": accuracy,
         "f1_micro": f1_micro,
         "balanced_accuracy": balanced_accuracy,
-        "invalid_predictions": invalid_count,
-        "invalid_predictions_percentage": invalid_percentage
+        "invalid_predictions": pred_invalid_count,
+        "invalid_predictions_percentage": pred_invalid_percentage
     })
 
     # Create and log confusion matrix
@@ -71,7 +94,6 @@ def measure_performance_sentiment_inference(true_labels, pred_labels, wandb_run)
     plt.xticks(ticks=np.arange(len(class_names)) + 0.5, labels=class_names)
     plt.yticks(ticks=np.arange(len(class_names)) + 0.5, labels=class_names, rotation=0)
     plt.text(0.5, -0.11, f'Balanced Accuracy: {balanced_accuracy:.2f} | F1 micro: {f1_micro:.2f}', ha='center', va='center', transform=plt.gca().transAxes, fontsize=8)
-    plt.text(0.5, -0.15, f'Invalid predictions: {invalid_count} ({invalid_percentage:.1f}%)', ha='center', va='center', transform=plt.gca().transAxes, fontsize=8)
     plt.xlabel('Predicted labels')
     plt.ylabel('True labels')
     
