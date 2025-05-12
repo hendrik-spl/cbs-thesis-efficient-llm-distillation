@@ -56,6 +56,13 @@ def main():
 
     if "sentiment" in args.dataset:
         teacher_dataset_path = "distillation-data/sentiment:50agree/llama3.3:70b/giddy-star-218"
+    elif "gold" in args.dataset:
+        teacher_dataset_path = "distillation-data/gold/llama3.3:70b/generous-hill-248"
+
+    # NEXT
+    # uv run scripts/run_inference_on_dist_data.py --dataset gold --inference_path opt:125m/flowing-voice-136/clean-aardvark-253
+    # uv run scripts/run_inference_on_dist_data.py --dataset gold --inference_path llama3.2:1b/exalted-darkness-137/glad-forest-254
+    # uv run scripts/run_inference_on_dist_data.py --dataset gold --inference_path llama3.1:8b/comic-dew-138/valiant-valley-260
 
     student_dataset_path = f"distillation-data/{args.dataset}/models/{args.dataset}/{args.inference_path}"
     # e.g. distillation-data/sentiment:50agree/models/sentiment:50agree/opt:125m/genial-energy-127/different-darkness-215

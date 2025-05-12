@@ -2,6 +2,7 @@ from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score
 from typing import List, Dict
 import pandas as pd
 import wandb
+import json
 
 def measure_performance_gold_inference(true_labels: List[Dict[str, int]], pred_labels: List[Dict[str, int]], wandb_run = None) -> Dict[str, float]:
     """
@@ -15,6 +16,12 @@ def measure_performance_gold_inference(true_labels: List[Dict[str, int]], pred_l
     Returns:
         Dictionary containing performance metrics
     """
+
+    if isinstance(true_labels[0], str):
+        true_labels = [json.loads(lbl) for lbl in true_labels]
+    if isinstance(pred_labels[0], str):
+        pred_labels = [json.loads(lbl) for lbl in pred_labels]
+
     # Determine categories if not provided
     categories = list(true_labels[0].keys())
     
